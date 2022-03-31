@@ -1,20 +1,44 @@
-package riderhdl
+package handlers
 
 import (
 	"github.com/google/uuid"
+	"github.com/swaggo/gin-swagger/swaggerFiles"
 	"rider-service/internal/core/domain"
 	"rider-service/internal/core/ports"
+	"rider-service/pkg/dto"
+
+	ginSwagger "github.com/swaggo/gin-swagger"
+	"rider-service/docs"
+	_ "rider-service/docs"
 )
 import "github.com/gin-gonic/gin"
 
 type HTTPHandler struct {
 	riderService ports.RiderService
+	router       *gin.Engine
 }
 
-func NewHTTPHandler(riderService ports.RiderService) *HTTPHandler {
+func NewHTTPHandler(riderService ports.RiderService, router *gin.Engine) *HTTPHandler {
 	return &HTTPHandler{
 		riderService: riderService,
+		router:       router,
 	}
+}
+
+func (handler *HTTPHandler) SetupEndpoints() {
+	api := handler.router.Group("/api")
+	api.GET("/riders", handler.GetAll)
+	api.GET("/riders/:id", handler.Get)
+	api.POST("/riders", handler.Create)
+	api.PUT("/riders/:id", handler.UpdateRider)
+	api.PUT("/riders/:id/location", handler.UpdateLocation)
+}
+
+func (handler *HTTPHandler) SetupSwagger() {
+	docs.SwaggerInfo.Title = "Rider service API"
+	docs.SwaggerInfo.Description = "The rider service manages all riders for the BikePack system."
+
+	handler.router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 }
 
 // GetAll godoc
@@ -25,8 +49,8 @@ func NewHTTPHandler(riderService ports.RiderService) *HTTPHandler {
 // @Produce      json
 // @Success      200  {object}  []domain.Rider
 // @Router       /api/riders [get]
-func (hdl *HTTPHandler) GetAll(c *gin.Context) {
-	riders, err := hdl.riderService.GetAll()
+func (handler *HTTPHandler) GetAll(c *gin.Context) {
+	riders, err := handler.riderService.GetAll()
 
 	if err != nil {
 		c.AbortWithStatus(404)
@@ -44,7 +68,7 @@ func (hdl *HTTPHandler) GetAll(c *gin.Context) {
 // @Produce      json
 // @Success      200  {object}  domain.Rider
 // @Router       /api/riders/{id} [get]
-func (hdl *HTTPHandler) Get(c *gin.Context) {
+func (handler *HTTPHandler) Get(c *gin.Context) {
 	uid, err := uuid.Parse(c.Param("id"))
 
 	if err != nil {
@@ -52,7 +76,7 @@ func (hdl *HTTPHandler) Get(c *gin.Context) {
 		return
 	}
 
-	rider, err := hdl.riderService.Get(uid)
+	rider, err := handler.riderService.Get(uid)
 
 	if err != nil {
 		c.AbortWithStatus(404)
@@ -71,22 +95,22 @@ func (hdl *HTTPHandler) Get(c *gin.Context) {
 // @Produce      json
 // @Success      200  {object}  ResponseCreate
 // @Router       /api/riders [post]
-func (hdl *HTTPHandler) Create(c *gin.Context) {
-	body := BodyCreate{}
+func (handler *HTTPHandler) Create(c *gin.Context) {
+	body := dto.BodyCreate{}
 	err := c.BindJSON(&body)
 
 	if err != nil {
 		c.AbortWithStatus(500)
 	}
 
-	rider, err := hdl.riderService.Create(body.Name, body.Status)
+	rider, err := handler.riderService.Create(body.Name, body.Status)
 
 	if err != nil {
 		c.AbortWithStatusJSON(500, gin.H{"message": err.Error()})
 		return
 	}
 
-	c.JSON(200, BuildResponseCreate(rider))
+	c.JSON(200, dto.BuildResponseCreate(rider))
 }
 
 // UpdateRider godoc
@@ -99,8 +123,8 @@ func (hdl *HTTPHandler) Create(c *gin.Context) {
 // @Produce      json
 // @Success      200  {object}  ResponseUpdate
 // @Router       /api/riders/{id} [put]
-func (hdl *HTTPHandler) UpdateRider(c *gin.Context) {
-	body := BodyUpdate{}
+func (handler *HTTPHandler) UpdateRider(c *gin.Context) {
+	body := dto.BodyUpdate{}
 	err := c.BindJSON(&body)
 
 	if err != nil {
@@ -114,14 +138,14 @@ func (hdl *HTTPHandler) UpdateRider(c *gin.Context) {
 		return
 	}
 
-	rider, err := hdl.riderService.Update(uid, body.Name, body.Status)
+	rider, err := handler.riderService.Update(uid, body.Name, body.Status)
 
 	if err != nil {
 		c.AbortWithStatusJSON(500, gin.H{"message": err.Error()})
 		return
 	}
 
-	c.JSON(200, BuildResponseUpdate(rider))
+	c.JSON(200, dto.BuildResponseUpdate(rider))
 }
 
 // UpdateLocation godoc
@@ -134,7 +158,7 @@ func (hdl *HTTPHandler) UpdateRider(c *gin.Context) {
 // @Produce      json
 // @Success      200  {object}  ResponseUpdate
 // @Router       /api/riders/{id}/location [put]
-func (hdl *HTTPHandler) UpdateLocation(c *gin.Context) {
+func (handler *HTTPHandler) UpdateLocation(c *gin.Context) {
 	body := domain.Location{}
 	err := c.BindJSON(&body)
 
@@ -149,12 +173,12 @@ func (hdl *HTTPHandler) UpdateLocation(c *gin.Context) {
 		return
 	}
 
-	rider, err := hdl.riderService.UpdateLocation(uid, body)
+	rider, err := handler.riderService.UpdateLocation(uid, body)
 
 	if err != nil {
 		c.AbortWithStatusJSON(500, gin.H{"message": err.Error()})
 		return
 	}
 
-	c.JSON(200, BuildResponseUpdate(rider))
+	c.JSON(200, dto.BuildResponseUpdate(rider))
 }

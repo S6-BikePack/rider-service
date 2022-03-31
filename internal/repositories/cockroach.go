@@ -1,4 +1,4 @@
-package riderrepo
+package repositories
 
 import (
 	"github.com/google/uuid"

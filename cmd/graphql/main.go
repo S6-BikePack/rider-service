@@ -8,11 +8,11 @@ import (
 	"os"
 	"rider-service/internal/core/ports"
 	"rider-service/internal/core/services/rabbitmq_service"
-	"rider-service/internal/core/services/ridersrv"
+	"rider-service/internal/core/services/rider_service"
 	"rider-service/internal/graph"
 	"rider-service/internal/graph/generated"
 	"rider-service/internal/handlers"
-	"rider-service/internal/repositories/riderrepo"
+	"rider-service/internal/repositories"
 	"rider-service/pkg/rabbitmq"
 )
 
@@ -36,7 +36,7 @@ func main() {
 		panic(err)
 	}
 
-	riderRepository, err := riderrepo.NewCockroachDB("postgresql://root@localhost:26257/riders?sslmode=disable")
+	riderRepository, err := repositories.NewCockroachDB("postgresql://root@localhost:26257/riders?sslmode=disable")
 
 	if err != nil {
 		panic(err)
@@ -44,7 +44,7 @@ func main() {
 
 	rmqPublisher := rabbitmq_service.NewRabbitMQPublisher(rmqServer)
 
-	riderService := ridersrv.New(riderRepository, rmqPublisher)
+	riderService := rider_service.New(riderRepository, rmqPublisher)
 
 	rmqSubscriber := handlers.NewRabbitMQ(rmqServer, riderService)
 

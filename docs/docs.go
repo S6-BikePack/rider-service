@@ -54,7 +54,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/riderhdl.BodyCreate"
+                            "$ref": "#/definitions/dto.BodyCreate"
                         }
                     }
                 ],
@@ -62,7 +62,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/riderhdl.ResponseCreate"
+                            "$ref": "#/definitions/dto.ResponseCreate"
                         }
                     }
                 }
@@ -109,7 +109,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/riderhdl.BodyUpdate"
+                            "$ref": "#/definitions/dto.BodyUpdate"
                         }
                     },
                     {
@@ -124,7 +124,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/riderhdl.ResponseUpdate"
+                            "$ref": "#/definitions/dto.ResponseUpdate"
                         }
                     }
                 }
@@ -162,7 +162,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/riderhdl.ResponseUpdate"
+                            "$ref": "#/definitions/dto.ResponseUpdate"
                         }
                     }
                 }
@@ -198,7 +198,7 @@ const docTemplate = `{
                 }
             }
         },
-        "riderhdl.BodyCreate": {
+        "dto.BodyCreate": {
             "type": "object",
             "properties": {
                 "name": {
@@ -209,7 +209,7 @@ const docTemplate = `{
                 }
             }
         },
-        "riderhdl.BodyUpdate": {
+        "dto.BodyUpdate": {
             "type": "object",
             "properties": {
                 "name": {
@@ -220,7 +220,7 @@ const docTemplate = `{
                 }
             }
         },
-        "riderhdl.ResponseCreate": {
+        "dto.ResponseCreate": {
             "type": "object",
             "properties": {
                 "id": {
@@ -237,7 +237,7 @@ const docTemplate = `{
                 }
             }
         },
-        "riderhdl.ResponseUpdate": {
+        "dto.ResponseUpdate": {
             "type": "object",
             "properties": {
                 "id": {

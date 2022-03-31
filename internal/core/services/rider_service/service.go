@@ -1,4 +1,4 @@
-package ridersrv
+package rider_service
 
 import (
 	"errors"

@@ -1,4 +1,4 @@
-package riderhdl
+package dto
 
 import "rider-service/internal/core/domain"
 
