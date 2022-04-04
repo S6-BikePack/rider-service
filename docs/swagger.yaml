@@ -17,21 +17,21 @@ definitions:
       status:
         type: integer
     type: object
-  riderhdl.BodyCreate:
+  dto.BodyCreate:
     properties:
       name:
         type: string
       status:
         type: integer
     type: object
-  riderhdl.BodyUpdate:
+  dto.BodyUpdate:
     properties:
       name:
         type: string
       status:
         type: integer
     type: object
-  riderhdl.ResponseCreate:
+  dto.ResponseCreate:
     properties:
       id:
         type: string
@@ -42,7 +42,7 @@ definitions:
       status:
         type: integer
     type: object
-  riderhdl.ResponseUpdate:
+  dto.ResponseUpdate:
     properties:
       id:
         type: string
@@ -81,14 +81,14 @@ paths:
         name: rider
         required: true
         schema:
-          $ref: '#/definitions/riderhdl.BodyCreate'
+          $ref: '#/definitions/dto.BodyCreate'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/riderhdl.ResponseCreate'
+            $ref: '#/definitions/dto.ResponseCreate'
       summary: create rider
   /api/riders/{id}:
     get:
@@ -117,7 +117,7 @@ paths:
         name: rider
         required: true
         schema:
-          $ref: '#/definitions/riderhdl.BodyUpdate'
+          $ref: '#/definitions/dto.BodyUpdate'
       - description: Rider id
         in: path
         name: id
@@ -129,7 +129,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/riderhdl.ResponseUpdate'
+            $ref: '#/definitions/dto.ResponseUpdate'
       summary: update rider
   /api/riders/{id}/location:
     put:
@@ -154,6 +154,6 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/riderhdl.ResponseUpdate'
+            $ref: '#/definitions/dto.ResponseUpdate'
       summary: update rider location
 swagger: "2.0"

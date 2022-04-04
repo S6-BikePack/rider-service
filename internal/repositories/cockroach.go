@@ -5,6 +5,7 @@ import (
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
+	"gorm.io/gorm/logger"
 	"rider-service/internal/core/domain"
 )
 
@@ -13,7 +14,9 @@ type cockroachdb struct {
 }
 
 func NewCockroachDB(connStr string) (*cockroachdb, error) {
-	db, err := gorm.Open(postgres.Open(connStr))
+	db, err := gorm.Open(postgres.Open(connStr), &gorm.Config{
+		Logger: logger.Default.LogMode(logger.Info),
+	})
 
 	if err != nil {
 		return nil, err

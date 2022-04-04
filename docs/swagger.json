@@ -42,7 +42,7 @@
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/riderhdl.BodyCreate"
+                            "$ref": "#/definitions/dto.BodyCreate"
                         }
                     }
                 ],
@@ -50,7 +50,7 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/riderhdl.ResponseCreate"
+                            "$ref": "#/definitions/dto.ResponseCreate"
                         }
                     }
                 }
@@ -97,7 +97,7 @@
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/riderhdl.BodyUpdate"
+                            "$ref": "#/definitions/dto.BodyUpdate"
                         }
                     },
                     {
@@ -112,7 +112,7 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/riderhdl.ResponseUpdate"
+                            "$ref": "#/definitions/dto.ResponseUpdate"
                         }
                     }
                 }
@@ -150,7 +150,7 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/riderhdl.ResponseUpdate"
+                            "$ref": "#/definitions/dto.ResponseUpdate"
                         }
                     }
                 }
@@ -186,7 +186,7 @@
                 }
             }
         },
-        "riderhdl.BodyCreate": {
+        "dto.BodyCreate": {
             "type": "object",
             "properties": {
                 "name": {
@@ -197,7 +197,7 @@
                 }
             }
         },
-        "riderhdl.BodyUpdate": {
+        "dto.BodyUpdate": {
             "type": "object",
             "properties": {
                 "name": {
@@ -208,7 +208,7 @@
                 }
             }
         },
-        "riderhdl.ResponseCreate": {
+        "dto.ResponseCreate": {
             "type": "object",
             "properties": {
                 "id": {
@@ -225,7 +225,7 @@
                 }
             }
         },
-        "riderhdl.ResponseUpdate": {
+        "dto.ResponseUpdate": {
             "type": "object",
             "properties": {
                 "id": {

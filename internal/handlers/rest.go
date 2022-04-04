@@ -91,9 +91,9 @@ func (handler *HTTPHandler) Get(c *gin.Context) {
 // @Schemes
 // @Description  creates a new rider
 // @Accept       json
-// @Param        rider  body  BodyCreate  true  "Add rider"
+// @Param        rider  body  dto.BodyCreate  true  "Add rider"
 // @Produce      json
-// @Success      200  {object}  ResponseCreate
+// @Success      200  {object}  dto.ResponseCreate
 // @Router       /api/riders [post]
 func (handler *HTTPHandler) Create(c *gin.Context) {
 	body := dto.BodyCreate{}
@@ -118,10 +118,10 @@ func (handler *HTTPHandler) Create(c *gin.Context) {
 // @Schemes
 // @Description  updates a rider's information
 // @Accept       json
-// @Param        rider  body  BodyUpdate  true  "Update rider"
+// @Param        rider  body  dto.BodyUpdate  true  "Update rider"
 // @Param        id     path  string      true  "Rider id"
 // @Produce      json
-// @Success      200  {object}  ResponseUpdate
+// @Success      200  {object}  dto.ResponseUpdate
 // @Router       /api/riders/{id} [put]
 func (handler *HTTPHandler) UpdateRider(c *gin.Context) {
 	body := dto.BodyUpdate{}
@@ -156,7 +156,7 @@ func (handler *HTTPHandler) UpdateRider(c *gin.Context) {
 // @Param        rider  body  domain.Location  true  "Update rider"
 // @Param        id  path  string  true  "Rider id"
 // @Produce      json
-// @Success      200  {object}  ResponseUpdate
+// @Success      200  {object}  dto.ResponseUpdate
 // @Router       /api/riders/{id}/location [put]
 func (handler *HTTPHandler) UpdateLocation(c *gin.Context) {
 	body := domain.Location{}
