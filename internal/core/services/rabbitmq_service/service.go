@@ -14,29 +14,24 @@ func NewRabbitMQPublisher(rabbitmq *rabbitmq.RabbitMQ) *rabbitmqPublisher {
 }
 
 func (rmq *rabbitmqPublisher) CreateRider(rider domain.Rider) error {
-	js, err := json.Marshal(rider)
-
-	if err != nil {
-		return err
-	}
-
-	err = rmq.Channel.Publish(
-		"topics",
-		"rider.create",
-		false,
-		false,
-		amqp.Publishing{
-			DeliveryMode: amqp.Persistent,
-			ContentType:  "text/plain",
-			Body:         js,
-		},
-	)
-
-	return err
+	return rmq.publishJson("rider.create", rider)
 }
 
 func (rmq *rabbitmqPublisher) UpdateRider(rider domain.Rider) error {
-	js, err := json.Marshal(rider)
+	return rmq.publishJson("rider.update", rider)
+}
+
+func (rmq *rabbitmqPublisher) UpdateRiderLocation(id string, newLocation domain.Location) error {
+	message := struct {
+		id       string
+		location domain.Location
+	}{id: id, location: newLocation}
+
+	return rmq.publishJson("rider.update.location", message)
+}
+
+func (rmq *rabbitmqPublisher) publishJson(topic string, body interface{}) error {
+	js, err := json.Marshal(body)
 
 	if err != nil {
 		return err
@@ -44,7 +39,7 @@ func (rmq *rabbitmqPublisher) UpdateRider(rider domain.Rider) error {
 
 	err = rmq.Channel.Publish(
 		"topics",
-		"rider.update",
+		topic,
 		false,
 		false,
 		amqp.Publishing{

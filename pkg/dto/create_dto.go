@@ -3,7 +3,7 @@ package dto
 import "rider-service/internal/core/domain"
 
 type BodyCreate struct {
-	Name   string
+	ID     string
 	Status int8
 }
 

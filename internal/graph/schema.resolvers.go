@@ -13,7 +13,7 @@ import (
 )
 
 func (r *mutationResolver) CreateRider(ctx context.Context, input model.RiderInput) (*domain.Rider, error) {
-	rider, err := r.RiderService.Create(input.Name, int8(input.Status))
+	rider, err := r.RiderService.Create()
 
 	if err != nil {
 		return nil, err
@@ -29,7 +29,7 @@ func (r *mutationResolver) UpdateRider(ctx context.Context, id string, input *mo
 		return nil, err
 	}
 
-	rider, err := r.RiderService.Update(uid, input.Name, int8(input.Status))
+	rider, err := r.RiderService.Update("")
 
 	if err != nil {
 		return nil, err
@@ -82,7 +82,7 @@ func (r *queryResolver) Rider(ctx context.Context, id string) (*domain.Rider, er
 		return nil, err
 	}
 
-	rider, err := r.RiderService.Get(uid)
+	rider, err := r.RiderService.Get("")
 
 	if err != nil {
 		return nil, err

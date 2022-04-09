@@ -1,10 +1,11 @@
 package handlers
 
 import (
-	"github.com/google/uuid"
 	"github.com/swaggo/gin-swagger/swaggerFiles"
+	"net/http"
 	"rider-service/internal/core/domain"
 	"rider-service/internal/core/ports"
+	"rider-service/pkg/authorization"
 	"rider-service/pkg/dto"
 
 	ginSwagger "github.com/swaggo/gin-swagger"
@@ -50,14 +51,19 @@ func (handler *HTTPHandler) SetupSwagger() {
 // @Success      200  {object}  []domain.Rider
 // @Router       /api/riders [get]
 func (handler *HTTPHandler) GetAll(c *gin.Context) {
-	riders, err := handler.riderService.GetAll()
+	if authorization.NewRest(c).AuthorizeAdmin() {
+		riders, err := handler.riderService.GetAll()
 
-	if err != nil {
-		c.AbortWithStatus(404)
-		return
+		if err != nil {
+			c.AbortWithStatus(http.StatusNotFound)
+			return
+		}
+
+		c.JSON(http.StatusOK, riders)
 	}
 
-	c.JSON(200, riders)
+	c.AbortWithStatus(http.StatusUnauthorized)
+
 }
 
 // Get godoc
@@ -69,21 +75,21 @@ func (handler *HTTPHandler) GetAll(c *gin.Context) {
 // @Success      200  {object}  domain.Rider
 // @Router       /api/riders/{id} [get]
 func (handler *HTTPHandler) Get(c *gin.Context) {
-	uid, err := uuid.Parse(c.Param("id"))
+	auth := authorization.NewRest(c)
 
-	if err != nil {
-		c.AbortWithStatus(400)
-		return
+	if auth.AuthorizeAdmin() || auth.AuthorizeMatchingId(c.Param("id")) {
+
+		rider, err := handler.riderService.Get(c.Param("id"))
+
+		if err != nil {
+			c.AbortWithStatus(http.StatusNotFound)
+			return
+		}
+
+		c.JSON(http.StatusOK, rider)
 	}
 
-	rider, err := handler.riderService.Get(uid)
-
-	if err != nil {
-		c.AbortWithStatus(404)
-		return
-	}
-
-	c.JSON(200, rider)
+	c.AbortWithStatus(http.StatusUnauthorized)
 }
 
 // Create godoc
@@ -100,17 +106,24 @@ func (handler *HTTPHandler) Create(c *gin.Context) {
 	err := c.BindJSON(&body)
 
 	if err != nil {
-		c.AbortWithStatus(500)
+		c.AbortWithStatus(http.StatusBadRequest)
 	}
 
-	rider, err := handler.riderService.Create(body.Name, body.Status)
+	auth := authorization.NewRest(c)
 
-	if err != nil {
-		c.AbortWithStatusJSON(500, gin.H{"message": err.Error()})
-		return
+	if auth.AuthorizeAdmin() || auth.AuthorizeMatchingId(body.ID) {
+
+		rider, err := handler.riderService.Create(body.ID, body.Status)
+
+		if err != nil {
+			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
+			return
+		}
+
+		c.JSON(http.StatusOK, dto.BuildResponseCreate(rider))
 	}
 
-	c.JSON(200, dto.BuildResponseCreate(rider))
+	c.AbortWithStatus(http.StatusUnauthorized)
 }
 
 // UpdateRider godoc
@@ -128,24 +141,24 @@ func (handler *HTTPHandler) UpdateRider(c *gin.Context) {
 	err := c.BindJSON(&body)
 
 	if err != nil {
-		c.AbortWithStatus(500)
+		c.AbortWithStatus(http.StatusBadRequest)
 	}
 
-	uid, err := uuid.Parse(c.Param("id"))
+	auth := authorization.NewRest(c)
 
-	if err != nil {
-		c.AbortWithStatus(400)
-		return
+	if auth.AuthorizeAdmin() || auth.AuthorizeMatchingId(c.Param("id")) {
+
+		rider, err := handler.riderService.Update(c.Param("id"), body.Status)
+
+		if err != nil {
+			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
+			return
+		}
+
+		c.JSON(http.StatusOK, dto.BuildResponseUpdate(rider))
 	}
 
-	rider, err := handler.riderService.Update(uid, body.Name, body.Status)
-
-	if err != nil {
-		c.AbortWithStatusJSON(500, gin.H{"message": err.Error()})
-		return
-	}
-
-	c.JSON(200, dto.BuildResponseUpdate(rider))
+	c.AbortWithStatus(http.StatusUnauthorized)
 }
 
 // UpdateLocation godoc
@@ -163,22 +176,24 @@ func (handler *HTTPHandler) UpdateLocation(c *gin.Context) {
 	err := c.BindJSON(&body)
 
 	if err != nil {
-		c.AbortWithStatus(500)
+		c.AbortWithStatus(http.StatusBadRequest)
 	}
 
-	uid, err := uuid.Parse(c.Param("id"))
+	auth := authorization.NewRest(c)
 
-	if err != nil {
-		c.AbortWithStatus(400)
-		return
+	if auth.AuthorizeAdmin() || auth.AuthorizeMatchingId(c.Param("id")) {
+
+		id := c.Param("id")
+
+		rider, err := handler.riderService.UpdateLocation(id, body)
+
+		if err != nil {
+			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
+			return
+		}
+
+		c.JSON(http.StatusOK, dto.BuildResponseUpdate(rider))
 	}
 
-	rider, err := handler.riderService.UpdateLocation(uid, body)
-
-	if err != nil {
-		c.AbortWithStatusJSON(500, gin.H{"message": err.Error()})
-		return
-	}
-
-	c.JSON(200, dto.BuildResponseUpdate(rider))
+	c.AbortWithStatus(http.StatusUnauthorized)
 }

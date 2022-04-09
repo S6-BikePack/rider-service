@@ -1,16 +1,17 @@
 package domain
 
-import (
-	"github.com/google/uuid"
-)
-
 type Rider struct {
-	ID       uuid.UUID `gorm:"type:uuid;default:uuid_generate_v4()"`
-	Name     string
+	UserID   string `gorm:"primaryKey"`
+	User     User
 	Status   int8
 	Location Location `gorm:"embedded"`
 }
 
-func NewRider(name string, status int8, location Location) Rider {
-	return Rider{Name: name, Status: status, Location: location}
+func NewRider(user User, status int8, location Location) Rider {
+	return Rider{
+		UserID:   user.ID,
+		User:     user,
+		Status:   status,
+		Location: location,
+	}
 }

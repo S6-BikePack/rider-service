@@ -4,6 +4,8 @@ import (
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/gin-gonic/gin"
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
 	"log"
 	"os"
 	"rider-service/internal/core/ports"
@@ -16,19 +18,14 @@ import (
 	"rider-service/pkg/rabbitmq"
 )
 
-const defaultPort = ":1236"
+const defaultPort = ":1234"
 const defaultRmqConn = "amqp://user:password@localhost:5672/"
+const defaultDbConn = "postgresql://user:password@localhost:5432/rider"
 
 func main() {
-	port := os.Getenv("PORT")
-	if port == "" {
-		port = defaultPort
-	}
+	port := GetEnvOrDefault("PORT", defaultPort)
 
-	rmqConn := os.Getenv("RABBITMQ")
-	if rmqConn == "" {
-		rmqConn = defaultRmqConn
-	}
+	rmqConn := GetEnvOrDefault("RABBITMQ", defaultRmqConn)
 
 	rmqServer, err := rabbitmq.NewRabbitMQ(rmqConn)
 
@@ -36,7 +33,15 @@ func main() {
 		panic(err)
 	}
 
-	riderRepository, err := repositories.NewCockroachDB("postgresql://root@localhost:26257/riders?sslmode=disable")
+	dbConn := GetEnvOrDefault("DATABASE", defaultDbConn)
+
+	db, err := gorm.Open(postgres.Open(dbConn))
+
+	if err != nil {
+		panic(err)
+	}
+
+	riderRepository, err := repositories.NewCockroachDB(db)
 
 	if err != nil {
 		panic(err)
@@ -52,7 +57,7 @@ func main() {
 	router.POST("/query", graphqlHandler(riderService))
 	router.GET("/", playgroundHandler())
 
-	go rmqSubscriber.Listen("delivery.#")
+	go rmqSubscriber.Listen()
 	log.Fatal(router.Run(port))
 }
 
@@ -71,4 +76,12 @@ func playgroundHandler() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		srv.ServeHTTP(c.Writer, c.Request)
 	}
+}
+
+func GetEnvOrDefault(environmentKey, defaultValue string) string {
+	returnValue := os.Getenv(environmentKey)
+	if returnValue == "" {
+		returnValue = defaultValue
+	}
+	return returnValue
 }

@@ -1,8 +1,10 @@
 package handlers
 
 import (
-	"errors"
+	"encoding/json"
 	"fmt"
+	"golang.org/x/exp/maps"
+	"rider-service/internal/core/domain"
 	"rider-service/internal/core/ports"
 	"rider-service/pkg/rabbitmq"
 )
@@ -10,19 +12,38 @@ import (
 type rabbitmqHandler struct {
 	rabbitmq *rabbitmq.RabbitMQ
 	service  ports.RiderService
+	handlers map[string]func(topic string, body []byte, handler *rabbitmqHandler) error
 }
 
 func NewRabbitMQ(rabbitmq *rabbitmq.RabbitMQ, service ports.RiderService) *rabbitmqHandler {
 	return &rabbitmqHandler{
 		rabbitmq: rabbitmq,
 		service:  service,
+		handlers: map[string]func(topic string, body []byte, handler *rabbitmqHandler) error{
+			"user.create": UserCreateOrUpdate,
+			"user.update": UserCreateOrUpdate,
+		},
 	}
 }
 
-func (handler *rabbitmqHandler) Listen(topics ...string) {
+func UserCreateOrUpdate(topic string, body []byte, handler *rabbitmqHandler) error {
+	var user domain.User
+
+	if err := json.Unmarshal(body, &user); err != nil {
+		return err
+	}
+
+	if err := handler.service.SaveOrUpdateUser(user); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (handler *rabbitmqHandler) Listen() {
 
 	q, err := handler.rabbitmq.Channel.QueueDeclare(
-		"riderQueue",
+		"customerQueue",
 		true,
 		false,
 		false,
@@ -34,7 +55,7 @@ func (handler *rabbitmqHandler) Listen(topics ...string) {
 		panic(err)
 	}
 
-	for _, s := range topics {
+	for _, s := range maps.Keys(handler.handlers) {
 		err = handler.rabbitmq.Channel.QueueBind(
 			q.Name,
 			s,
@@ -64,37 +85,25 @@ func (handler *rabbitmqHandler) Listen(topics ...string) {
 
 	go func() {
 		for msg := range msgs {
-			err = handler.handleMessage(msg.RoutingKey, msg.Body)
+			fun, exist := handler.handlers[msg.RoutingKey]
 
-			if err != nil {
-				msg.Ack(false)
-				continue
+			if exist {
+				err = fun(msg.RoutingKey, msg.Body, handler)
+				if err == nil {
+					msg.Ack(false)
+					continue
+				}
 			}
 
-			msg.Ack(true)
+			fmt.Println(err)
+			msg.Nack(false, true)
 		}
 	}()
 
 	<-forever
 }
 
-func (handler *rabbitmqHandler) handleMessage(routing string, body []byte) error {
-	switch routing {
-	case "rider.create":
-		fmt.Printf("Received message: %s\n", routing)
-		fmt.Printf("Message payload: %s\n", body)
-		return nil
-	case "rider.update":
-		return nil
-	case "delivery.create":
-		fmt.Printf("Route create")
-		fmt.Printf("Message payload: %s\n", body)
-		return nil
-	case "delivery.update":
-		fmt.Printf("Route update")
-		fmt.Printf("Message payload: %s\n", body)
-		return nil
-	default:
-		return errors.New("could not handle message")
-	}
+type MessageHandler struct {
+	topic   string
+	handler func(topic string, body []byte, handler *rabbitmqHandler) error
 }

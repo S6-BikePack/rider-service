@@ -3,7 +3,6 @@ package dto
 import "rider-service/internal/core/domain"
 
 type BodyUpdate struct {
-	Name   string
 	Status int8
 }
 

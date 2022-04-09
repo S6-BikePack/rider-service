@@ -8,50 +8,57 @@ definitions:
     type: object
   domain.Rider:
     properties:
-      id:
-        type: string
       location:
         $ref: '#/definitions/domain.Location'
-      name:
-        type: string
       status:
         type: integer
+      user:
+        $ref: '#/definitions/domain.User'
+      userID:
+        type: string
+    type: object
+  domain.User:
+    properties:
+      id:
+        type: string
+      lastName:
+        type: string
+      name:
+        type: string
     type: object
   dto.BodyCreate:
     properties:
-      name:
+      id:
         type: string
       status:
         type: integer
     type: object
   dto.BodyUpdate:
     properties:
-      name:
-        type: string
       status:
         type: integer
     type: object
   dto.ResponseCreate:
     properties:
-      id:
-        type: string
       location:
         $ref: '#/definitions/domain.Location'
-      name:
-        type: string
       status:
         type: integer
+      user:
+        $ref: '#/definitions/domain.User'
+      userID:
+        type: string
     type: object
   dto.ResponseUpdate:
     properties:
-      id:
-        type: string
       location:
         $ref: '#/definitions/domain.Location'
-      name:
-        type: string
       status:
         type: integer
+      user:
+        $ref: '#/definitions/domain.User'
+      userID:
+        type: string
     type: object
 info:
   contact: {}

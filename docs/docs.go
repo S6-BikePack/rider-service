@@ -184,24 +184,38 @@ const docTemplate = `{
         "domain.Rider": {
             "type": "object",
             "properties": {
-                "id": {
-                    "type": "string"
-                },
                 "location": {
                     "$ref": "#/definitions/domain.Location"
                 },
-                "name": {
-                    "type": "string"
-                },
                 "status": {
                     "type": "integer"
+                },
+                "user": {
+                    "$ref": "#/definitions/domain.User"
+                },
+                "userID": {
+                    "type": "string"
+                }
+            }
+        },
+        "domain.User": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "lastName": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
                 }
             }
         },
         "dto.BodyCreate": {
             "type": "object",
             "properties": {
-                "name": {
+                "id": {
                     "type": "string"
                 },
                 "status": {
@@ -212,9 +226,6 @@ const docTemplate = `{
         "dto.BodyUpdate": {
             "type": "object",
             "properties": {
-                "name": {
-                    "type": "string"
-                },
                 "status": {
                     "type": "integer"
                 }
@@ -223,34 +234,34 @@ const docTemplate = `{
         "dto.ResponseCreate": {
             "type": "object",
             "properties": {
-                "id": {
-                    "type": "string"
-                },
                 "location": {
                     "$ref": "#/definitions/domain.Location"
                 },
-                "name": {
-                    "type": "string"
-                },
                 "status": {
                     "type": "integer"
+                },
+                "user": {
+                    "$ref": "#/definitions/domain.User"
+                },
+                "userID": {
+                    "type": "string"
                 }
             }
         },
         "dto.ResponseUpdate": {
             "type": "object",
             "properties": {
-                "id": {
-                    "type": "string"
-                },
                 "location": {
                     "$ref": "#/definitions/domain.Location"
                 },
-                "name": {
-                    "type": "string"
-                },
                 "status": {
                     "type": "integer"
+                },
+                "user": {
+                    "$ref": "#/definitions/domain.User"
+                },
+                "userID": {
+                    "type": "string"
                 }
             }
         }

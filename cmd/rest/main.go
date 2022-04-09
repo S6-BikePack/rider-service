@@ -1,6 +1,8 @@
 package main
 
 import (
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
 	"log"
 	"os"
 	"rider-service/internal/core/services/rabbitmq_service"
@@ -21,7 +23,13 @@ const defaultDbConn = "postgresql://user:password@localhost:5432/rider"
 func main() {
 	dbConn := GetEnvOrDefault("DATABASE", defaultDbConn)
 
-	riderRepository, err := repositories.NewCockroachDB(dbConn)
+	db, err := gorm.Open(postgres.Open(dbConn))
+
+	if err != nil {
+		panic(err)
+	}
+
+	riderRepository, err := repositories.NewCockroachDB(db)
 
 	if err != nil {
 		panic(err)
@@ -49,7 +57,7 @@ func main() {
 
 	port := GetEnvOrDefault("PORT", defaultPort)
 
-	go rmqSubscriber.Listen("delivery.#")
+	go rmqSubscriber.Listen()
 	log.Fatal(router.Run(port))
 }
 

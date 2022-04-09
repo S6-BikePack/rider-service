@@ -1,11 +1,9 @@
 package repositories
 
 import (
-	"github.com/google/uuid"
-	"gorm.io/driver/postgres"
+	"errors"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
-	"gorm.io/gorm/logger"
 	"rider-service/internal/core/domain"
 )
 
@@ -13,16 +11,8 @@ type cockroachdb struct {
 	Connection *gorm.DB
 }
 
-func NewCockroachDB(connStr string) (*cockroachdb, error) {
-	db, err := gorm.Open(postgres.Open(connStr), &gorm.Config{
-		Logger: logger.Default.LogMode(logger.Info),
-	})
-
-	if err != nil {
-		return nil, err
-	}
-
-	err = db.AutoMigrate(&domain.Rider{})
+func NewCockroachDB(db *gorm.DB) (*cockroachdb, error) {
+	err := db.AutoMigrate(&domain.Rider{})
 
 	if err != nil {
 		return nil, err
@@ -35,10 +25,10 @@ func NewCockroachDB(connStr string) (*cockroachdb, error) {
 	return &database, nil
 }
 
-func (repository *cockroachdb) Get(uid uuid.UUID) (domain.Rider, error) {
+func (repository *cockroachdb) Get(id string) (domain.Rider, error) {
 	var rider domain.Rider
 
-	repository.Connection.Preload(clause.Associations).First(&rider, uid)
+	repository.Connection.Preload(clause.Associations).First(&rider, "user_id = ?", id)
 
 	return rider, nil
 }
@@ -52,7 +42,7 @@ func (repository *cockroachdb) GetAll() ([]domain.Rider, error) {
 }
 
 func (repository *cockroachdb) Save(rider domain.Rider) (domain.Rider, error) {
-	result := repository.Connection.Create(&rider)
+	result := repository.Connection.Omit("User").Create(&rider)
 
 	if result.Error != nil {
 		return domain.Rider{}, result.Error
@@ -69,4 +59,34 @@ func (repository *cockroachdb) Update(rider domain.Rider) (domain.Rider, error) 
 	}
 
 	return rider, nil
+}
+
+func (repository *cockroachdb) SaveOrUpdateUser(user domain.User) error {
+	updateResult := repository.Connection.Model(&user).Where("id = ?", user.ID).Updates(&user)
+
+	if updateResult.RowsAffected == 0 {
+		createResult := repository.Connection.Create(&user)
+
+		if createResult.Error != nil {
+			return errors.New("could not create user")
+		}
+	}
+
+	if updateResult.Error != nil {
+		return errors.New("could not update user")
+	}
+
+	return nil
+}
+
+func (repository *cockroachdb) GetUser(id string) (domain.User, error) {
+	var user domain.User
+
+	repository.Connection.Preload(clause.Associations).First(&user, "id = ?", id)
+
+	if (user == domain.User{}) {
+		return user, errors.New("user not found")
+	}
+
+	return user, nil
 }
