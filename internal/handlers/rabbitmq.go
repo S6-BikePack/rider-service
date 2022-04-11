@@ -40,10 +40,10 @@ func UserCreateOrUpdate(topic string, body []byte, handler *rabbitmqHandler) err
 	return nil
 }
 
-func (handler *rabbitmqHandler) Listen() {
+func (handler *rabbitmqHandler) Listen(queue string) {
 
 	q, err := handler.rabbitmq.Channel.QueueDeclare(
-		"customerQueue",
+		queue,
 		true,
 		false,
 		false,

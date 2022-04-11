@@ -1,17 +1,20 @@
 package domain
 
 type Rider struct {
-	UserID   string `gorm:"primaryKey"`
-	User     User
-	Status   int8
-	Location Location `gorm:"embedded"`
+	UserID      string `gorm:"primaryKey"`
+	User        User
+	Status      int
+	ServiceArea int
+	Capacity    Dimensions `gorm:"embedded"`
+	Location    Location   `gorm:"embedded"`
 }
 
-func NewRider(user User, status int8, location Location) Rider {
+func NewRider(user User, status int, serviceArea int, capacity Dimensions) Rider {
 	return Rider{
-		UserID:   user.ID,
-		User:     user,
-		Status:   status,
-		Location: location,
+		UserID:      user.ID,
+		User:        user,
+		Status:      status,
+		ServiceArea: serviceArea,
+		Capacity:    capacity,
 	}
 }

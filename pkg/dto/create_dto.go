@@ -2,9 +2,16 @@ package dto
 
 import "rider-service/internal/core/domain"
 
+type CreateDimensions struct {
+	Width  int
+	Height int
+	Depth  int
+}
+
 type BodyCreate struct {
-	ID     string
-	Status int8
+	ID          string
+	ServiceArea int
+	Capacity    CreateDimensions
 }
 
 type ResponseCreate domain.Rider

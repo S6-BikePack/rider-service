@@ -57,7 +57,7 @@ func main() {
 	router.POST("/query", graphqlHandler(riderService))
 	router.GET("/", playgroundHandler())
 
-	go rmqSubscriber.Listen()
+	go rmqSubscriber.Listen("riderQueue")
 	log.Fatal(router.Run(port))
 }
 

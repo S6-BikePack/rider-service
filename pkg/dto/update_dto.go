@@ -3,7 +3,9 @@ package dto
 import "rider-service/internal/core/domain"
 
 type BodyUpdate struct {
-	Status int8
+	Status      int
+	ServiceArea int
+	Capacity    CreateDimensions
 }
 
 type ResponseUpdate domain.Rider

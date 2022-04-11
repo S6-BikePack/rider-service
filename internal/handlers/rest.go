@@ -107,13 +107,14 @@ func (handler *HTTPHandler) Create(c *gin.Context) {
 
 	if err != nil {
 		c.AbortWithStatus(http.StatusBadRequest)
+		return
 	}
 
 	auth := authorization.NewRest(c)
 
 	if auth.AuthorizeAdmin() || auth.AuthorizeMatchingId(body.ID) {
 
-		rider, err := handler.riderService.Create(body.ID, body.Status)
+		rider, err := handler.riderService.Create(body.ID, body.ServiceArea, domain.Dimensions(body.Capacity))
 
 		if err != nil {
 			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
@@ -148,7 +149,7 @@ func (handler *HTTPHandler) UpdateRider(c *gin.Context) {
 
 	if auth.AuthorizeAdmin() || auth.AuthorizeMatchingId(c.Param("id")) {
 
-		rider, err := handler.riderService.Update(c.Param("id"), body.Status)
+		rider, err := handler.riderService.Update(c.Param("id"), body.Status, body.ServiceArea, domain.Dimensions(body.Capacity))
 
 		if err != nil {
 			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": err.Error()})

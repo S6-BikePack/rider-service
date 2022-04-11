@@ -57,7 +57,7 @@ func main() {
 
 	port := GetEnvOrDefault("PORT", defaultPort)
 
-	go rmqSubscriber.Listen()
+	go rmqSubscriber.Listen("riderQueue")
 	log.Fatal(router.Run(port))
 }
 

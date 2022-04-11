@@ -23,13 +23,23 @@ func (srv *service) GetAll() ([]domain.Rider, error) {
 }
 
 func (srv *service) Get(id string) (domain.Rider, error) {
-	return srv.riderRepository.Get(id)
+	rider, err := srv.riderRepository.Get(id)
+
+	if err != nil {
+		return rider, err
+	}
+
+	if (rider == domain.Rider{}) {
+		return rider, errors.New("could not find rider with id: " + id)
+	}
+
+	return rider, nil
 }
 
-func (srv *service) Create(userId string, status int8) (domain.Rider, error) {
+func (srv *service) Create(userId string, serviceArea int, capacity domain.Dimensions) (domain.Rider, error) {
 	user, err := srv.riderRepository.GetUser(userId)
 
-	rider := domain.NewRider(user, status, domain.Location{})
+	rider := domain.NewRider(user, 0, serviceArea, capacity)
 
 	rider, err = srv.riderRepository.Save(rider)
 
@@ -41,14 +51,16 @@ func (srv *service) Create(userId string, status int8) (domain.Rider, error) {
 	return rider, nil
 }
 
-func (srv *service) Update(id string, status int8) (domain.Rider, error) {
+func (srv *service) Update(id string, status int, serviceArea int, capacity domain.Dimensions) (domain.Rider, error) {
 	rider, err := srv.Get(id)
 
 	if err != nil {
 		return domain.Rider{}, errors.New("could not find rider with id")
 	}
 
+	rider.ServiceArea = serviceArea
 	rider.Status = status
+	rider.Capacity = capacity
 
 	rider, err = srv.riderRepository.Update(rider)
 
