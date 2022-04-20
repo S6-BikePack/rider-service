@@ -20,10 +20,10 @@ COPY --from=rest /app/server /app/server
 LABEL traefik.enable=true
 LABEL traefik.http.routers.rider-rest.rule=PathPrefix(`/api/riders`)
 LABEL traefik.http.routers.rider-rest.entrypoints=web
-LABEL traefik.http.routers.rider-rest.middlewares='serviceheaders, traefik-forward-auth'
-LABEL traefik.http.middlewares.serviceheaders.headers.accesscontrolalloworiginlist=*
-LABEL traefik.http.middlewares.serviceheaders.headers.accessControlAllowMethods='GET, POST'
-LABEL traefik.http.middlewares.serviceheaders.headers.accessControlAllowHeaders='authorization, content-type'
+LABEL traefik.http.routers.rider-rest.middlewares='putheaders, traefik-forward-auth'
+LABEL traefik.http.middlewares.putheaders.headers.accesscontrolalloworiginlist=*
+LABEL traefik.http.middlewares.putheaders.headers.accessControlAllowMethods='GET, POST, PUT'
+LABEL traefik.http.middlewares.putheaders.headers.accessControlAllowHeaders='authorization, content-type'
 
 EXPOSE 1234
 

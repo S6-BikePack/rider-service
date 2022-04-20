@@ -9,6 +9,7 @@ require (
 	github.com/rabbitmq/amqp091-go v1.3.2
 	github.com/swaggo/gin-swagger v1.4.1
 	github.com/swaggo/swag v1.8.0
+	github.com/twpayne/go-geom v1.4.1
 	github.com/vektah/gqlparser/v2 v2.4.0
 	golang.org/x/exp v0.0.0-20220407100705-7b9b53b0aca4
 	gorm.io/driver/postgres v1.3.1

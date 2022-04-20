@@ -6,7 +6,7 @@ type Rider struct {
 	Status      int
 	ServiceArea int
 	Capacity    Dimensions `gorm:"embedded"`
-	Location    Location   `gorm:"embedded"`
+	Location    Location
 }
 
 func NewRider(user User, status int, serviceArea int, capacity Dimensions) Rider {
