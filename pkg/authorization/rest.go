@@ -2,7 +2,6 @@ package authorization
 
 import (
 	"encoding/json"
-	"fmt"
 	"github.com/gin-gonic/gin"
 )
 
@@ -30,19 +29,9 @@ func NewRest(context *gin.Context) *RestAuthorization {
 
 func (auth *RestAuthorization) AuthorizeAdmin() bool {
 	v, exist := auth.claims["admin"]
-	if exist && v == true {
-		fmt.Println("AUTH: is admin")
-	} else {
-		fmt.Println("AUTH: is not admin")
-	}
 	return exist && v == true
 }
 
 func (auth *RestAuthorization) AuthorizeMatchingId(id string) bool {
-	if auth.id == id {
-		fmt.Println("AUTH: id's match")
-	} else {
-		fmt.Println("AUTH: id's do not match")
-	}
 	return auth.id == id
 }

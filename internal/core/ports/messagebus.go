@@ -1,11 +1,12 @@
 package ports
 
 import (
+	"context"
 	"rider-service/internal/core/domain"
 )
 
 type MessageBusPublisher interface {
-	CreateRider(rider domain.Rider) error
-	UpdateRider(rider domain.Rider) error
-	UpdateRiderLocation(id string, newLocation domain.Location) error
+	CreateRider(ctx context.Context, rider domain.Rider) error
+	UpdateRider(ctx context.Context, rider domain.Rider) error
+	UpdateRiderLocation(ctx context.Context, id string, newLocation domain.Location) error
 }

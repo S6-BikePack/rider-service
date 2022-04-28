@@ -1,14 +1,15 @@
 package ports
 
 import (
+	"context"
 	"rider-service/internal/core/domain"
 )
 
 type RiderRepository interface {
-	GetAll() ([]domain.Rider, error)
-	Get(id string) (domain.Rider, error)
-	Save(rider domain.Rider) (domain.Rider, error)
-	Update(rider domain.Rider) (domain.Rider, error)
-	SaveOrUpdateUser(user domain.User) error
-	GetUser(id string) (domain.User, error)
+	GetAll(ctx context.Context) ([]domain.Rider, error)
+	Get(ctx context.Context, id string) (domain.Rider, error)
+	Save(ctx context.Context, rider domain.Rider) (domain.Rider, error)
+	Update(ctx context.Context, rider domain.Rider) (domain.Rider, error)
+	SaveOrUpdateUser(ctx context.Context, user domain.User) error
+	GetUser(ctx context.Context, id string) (domain.User, error)
 }

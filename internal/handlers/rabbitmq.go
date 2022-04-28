@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"golang.org/x/exp/maps"
@@ -33,7 +34,7 @@ func UserCreateOrUpdate(topic string, body []byte, handler *rabbitmqHandler) err
 		return err
 	}
 
-	if err := handler.service.SaveOrUpdateUser(user); err != nil {
+	if err := handler.service.SaveOrUpdateUser(context.Background(), user); err != nil {
 		return err
 	}
 

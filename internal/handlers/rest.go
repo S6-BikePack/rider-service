@@ -2,11 +2,13 @@ package handlers
 
 import (
 	"github.com/swaggo/gin-swagger/swaggerFiles"
+	"go.opentelemetry.io/otel/trace"
 	"net/http"
 	"rider-service/internal/core/domain"
 	"rider-service/internal/core/ports"
 	"rider-service/pkg/authorization"
 	"rider-service/pkg/dto"
+	"rider-service/pkg/logging"
 
 	ginSwagger "github.com/swaggo/gin-swagger"
 	"rider-service/docs"
@@ -17,12 +19,14 @@ import "github.com/gin-gonic/gin"
 type HTTPHandler struct {
 	riderService ports.RiderService
 	router       *gin.Engine
+	logger       logging.Logger
 }
 
-func NewHTTPHandler(riderService ports.RiderService, router *gin.Engine) *HTTPHandler {
+func NewHTTPHandler(riderService ports.RiderService, router *gin.Engine, logger logging.Logger) *HTTPHandler {
 	return &HTTPHandler{
 		riderService: riderService,
 		router:       router,
+		logger:       logger,
 	}
 }
 
@@ -51,15 +55,21 @@ func (handler *HTTPHandler) SetupSwagger() {
 // @Success      200  {object}  []domain.Rider
 // @Router       /api/riders [get]
 func (handler *HTTPHandler) GetAll(c *gin.Context) {
+	ctx := c.Request.Context()
+	span := trace.SpanFromContext(ctx)
+	defer span.End()
+
 	if authorization.NewRest(c).AuthorizeAdmin() {
-		riders, err := handler.riderService.GetAll()
+		riders, err := handler.riderService.GetAll(ctx)
 
 		if err != nil {
+			handler.logger.Error(ctx, err.Error(), "error", err)
 			c.AbortWithStatus(http.StatusNotFound)
 			return
 		}
 
 		c.JSON(http.StatusOK, riders)
+		return
 	}
 
 	c.AbortWithStatus(http.StatusUnauthorized)
@@ -75,11 +85,15 @@ func (handler *HTTPHandler) GetAll(c *gin.Context) {
 // @Success      200  {object}  domain.Rider
 // @Router       /api/riders/{id} [get]
 func (handler *HTTPHandler) Get(c *gin.Context) {
+	ctx := c.Request.Context()
+	span := trace.SpanFromContext(ctx)
+	defer span.End()
+
 	auth := authorization.NewRest(c)
 
 	if auth.AuthorizeAdmin() || auth.AuthorizeMatchingId(c.Param("id")) {
 
-		rider, err := handler.riderService.Get(c.Param("id"))
+		rider, err := handler.riderService.Get(ctx, c.Param("id"))
 
 		if err != nil {
 			c.AbortWithStatus(http.StatusNotFound)
@@ -87,6 +101,7 @@ func (handler *HTTPHandler) Get(c *gin.Context) {
 		}
 
 		c.JSON(http.StatusOK, rider)
+		return
 	}
 
 	c.AbortWithStatus(http.StatusUnauthorized)
@@ -102,6 +117,10 @@ func (handler *HTTPHandler) Get(c *gin.Context) {
 // @Success      200  {object}  dto.ResponseCreate
 // @Router       /api/riders [post]
 func (handler *HTTPHandler) Create(c *gin.Context) {
+	ctx := c.Request.Context()
+	span := trace.SpanFromContext(ctx)
+	defer span.End()
+
 	body := dto.BodyCreate{}
 	err := c.BindJSON(&body)
 
@@ -114,7 +133,7 @@ func (handler *HTTPHandler) Create(c *gin.Context) {
 
 	if auth.AuthorizeAdmin() || auth.AuthorizeMatchingId(body.ID) {
 
-		rider, err := handler.riderService.Create(body.ID, body.ServiceArea, domain.Dimensions(body.Capacity))
+		rider, err := handler.riderService.Create(ctx, body.ID, body.ServiceArea, domain.Dimensions(body.Capacity))
 
 		if err != nil {
 			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
@@ -122,6 +141,7 @@ func (handler *HTTPHandler) Create(c *gin.Context) {
 		}
 
 		c.JSON(http.StatusOK, dto.BuildResponseCreate(rider))
+		return
 	}
 
 	c.AbortWithStatus(http.StatusUnauthorized)
@@ -138,18 +158,26 @@ func (handler *HTTPHandler) Create(c *gin.Context) {
 // @Success      200  {object}  dto.ResponseUpdate
 // @Router       /api/riders/{id} [put]
 func (handler *HTTPHandler) UpdateRider(c *gin.Context) {
+	ctx := c.Request.Context()
+	span := trace.SpanFromContext(ctx)
+	defer span.End()
+
 	body := dto.BodyUpdate{}
 	err := c.BindJSON(&body)
 
 	if err != nil {
 		c.AbortWithStatus(http.StatusBadRequest)
+		return
 	}
 
 	auth := authorization.NewRest(c)
+	riderId := c.Param("id")
 
-	if auth.AuthorizeAdmin() || auth.AuthorizeMatchingId(c.Param("id")) {
+	if auth.AuthorizeAdmin() || auth.AuthorizeMatchingId(riderId) {
 
-		rider, err := handler.riderService.Update(c.Param("id"), body.Status, body.ServiceArea, domain.Dimensions(body.Capacity))
+		handler.logger.Info(ctx, "Updating rider position", "rider", riderId, "body", body)
+
+		rider, err := handler.riderService.Update(ctx, riderId, body.Status, body.ServiceArea, domain.Dimensions(body.Capacity))
 
 		if err != nil {
 			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
@@ -157,6 +185,7 @@ func (handler *HTTPHandler) UpdateRider(c *gin.Context) {
 		}
 
 		c.JSON(http.StatusOK, dto.BuildResponseUpdate(rider))
+		return
 	}
 
 	c.AbortWithStatus(http.StatusUnauthorized)
@@ -173,11 +202,16 @@ func (handler *HTTPHandler) UpdateRider(c *gin.Context) {
 // @Success      200  {object}  dto.ResponseUpdate
 // @Router       /api/riders/{id}/location [put]
 func (handler *HTTPHandler) UpdateLocation(c *gin.Context) {
+	ctx := c.Request.Context()
+	span := trace.SpanFromContext(ctx)
+	defer span.End()
+
 	body := domain.Location{}
 	err := c.BindJSON(&body)
 
 	if err != nil {
 		c.AbortWithStatus(http.StatusBadRequest)
+		return
 	}
 
 	auth := authorization.NewRest(c)
@@ -186,7 +220,7 @@ func (handler *HTTPHandler) UpdateLocation(c *gin.Context) {
 
 		id := c.Param("id")
 
-		rider, err := handler.riderService.UpdateLocation(id, body)
+		rider, err := handler.riderService.UpdateLocation(ctx, id, body)
 
 		if err != nil {
 			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
@@ -194,6 +228,7 @@ func (handler *HTTPHandler) UpdateLocation(c *gin.Context) {
 		}
 
 		c.JSON(http.StatusOK, dto.BuildResponseUpdate(rider))
+		return
 	}
 
 	c.AbortWithStatus(http.StatusUnauthorized)
