@@ -8,5 +8,5 @@ import (
 type MessageBusPublisher interface {
 	CreateRider(ctx context.Context, rider domain.Rider) error
 	UpdateRider(ctx context.Context, rider domain.Rider) error
-	UpdateRiderLocation(ctx context.Context, id string, newLocation domain.Location) error
+	UpdateRiderLocation(ctx context.Context, serviceArea domain.ServiceArea, id string, newLocation domain.Location) error
 }

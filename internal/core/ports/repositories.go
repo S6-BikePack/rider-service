@@ -13,3 +13,7 @@ type RiderRepository interface {
 	SaveOrUpdateUser(ctx context.Context, user domain.User) error
 	GetUser(ctx context.Context, id string) (domain.User, error)
 }
+
+type ServiceAreaRepository interface {
+	SaveOrUpdateServiceArea(serviceArea domain.ServiceArea) error
+}

@@ -34,7 +34,10 @@ func NewSugaredOtelZap() (*OtelzapSugaredLogger, error) {
 }
 
 func (l *OtelzapSugaredLogger) Close() {
-	l.Logger.Sync()
+	err := l.Logger.Sync()
+	if err != nil {
+		l.Logger.Error(err)
+	}
 }
 
 func (l *OtelzapSugaredLogger) Panic(ctx context.Context, args ...interface{}) {

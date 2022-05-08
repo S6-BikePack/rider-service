@@ -27,13 +27,13 @@ func (rmq *rabbitmqPublisher) UpdateRider(ctx context.Context, rider domain.Ride
 	return rmq.publishJson(ctx, "rider.update", rider)
 }
 
-func (rmq *rabbitmqPublisher) UpdateRiderLocation(ctx context.Context, id string, newLocation domain.Location) error {
+func (rmq *rabbitmqPublisher) UpdateRiderLocation(ctx context.Context, serviceArea domain.ServiceArea, id string, newLocation domain.Location) error {
 	message := struct {
-		id       string
-		location domain.Location
-	}{id: id, location: newLocation}
+		Id       string
+		Location domain.Location
+	}{Id: id, Location: newLocation}
 
-	return rmq.publishJson(ctx, "rider.update.location", message)
+	return rmq.publishJson(ctx, "rider."+serviceArea.Identifier+".update.location", message)
 }
 
 func (rmq *rabbitmqPublisher) publishJson(ctx context.Context, topic string, body interface{}) error {
@@ -43,7 +43,7 @@ func (rmq *rabbitmqPublisher) publishJson(ctx context.Context, topic string, bod
 		return err
 	}
 
-	ctx, span := rmq.tracer.Start(ctx, "publish")
+	_, span := rmq.tracer.Start(ctx, "publish")
 	span.AddEvent(
 		"Published message to rabbitmq",
 		trace.WithAttributes(

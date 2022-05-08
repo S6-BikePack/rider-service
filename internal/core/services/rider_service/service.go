@@ -40,6 +40,10 @@ func (srv *service) Get(ctx context.Context, id string) (domain.Rider, error) {
 func (srv *service) Create(ctx context.Context, userId string, serviceArea int, capacity domain.Dimensions) (domain.Rider, error) {
 	user, err := srv.riderRepository.GetUser(ctx, userId)
 
+	if err != nil {
+		return domain.Rider{}, err
+	}
+
 	rider := domain.NewRider(user, 0, serviceArea, capacity)
 
 	rider, err = srv.riderRepository.Save(ctx, rider)
@@ -48,7 +52,12 @@ func (srv *service) Create(ctx context.Context, userId string, serviceArea int, 
 		return domain.Rider{}, errors.New("saving new rider failed")
 	}
 
-	srv.messagePublisher.CreateRider(ctx, rider)
+	err = srv.messagePublisher.CreateRider(ctx, rider)
+
+	if err != nil {
+		return rider, err
+	}
+
 	return rider, nil
 }
 
@@ -59,7 +68,7 @@ func (srv *service) Update(ctx context.Context, id string, status int, serviceAr
 		return domain.Rider{}, errors.New("could not find rider with id")
 	}
 
-	rider.ServiceArea = serviceArea
+	rider.ServiceAreaID = serviceArea
 	rider.Status = status
 
 	if capacity != (domain.Dimensions{}) {
@@ -72,7 +81,12 @@ func (srv *service) Update(ctx context.Context, id string, status int, serviceAr
 		return domain.Rider{}, errors.New("saving new rider failed")
 	}
 
-	srv.messagePublisher.UpdateRider(ctx, rider)
+	err = srv.messagePublisher.UpdateRider(ctx, rider)
+
+	if err != nil {
+		return rider, err
+	}
+
 	return rider, nil
 }
 
@@ -91,7 +105,12 @@ func (srv *service) UpdateLocation(ctx context.Context, id string, location doma
 		return domain.Rider{}, errors.New("saving new rider failed")
 	}
 
-	srv.messagePublisher.UpdateRiderLocation(ctx, rider.UserID, location)
+	err = srv.messagePublisher.UpdateRiderLocation(ctx, rider.ServiceArea, rider.UserID, location)
+
+	if err != nil {
+		return rider, err
+	}
+
 	return rider, nil
 }
 

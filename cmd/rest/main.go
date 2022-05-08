@@ -7,6 +7,7 @@ import (
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"os"
+	"rider-service/internal/core/services"
 	"rider-service/internal/core/services/rabbitmq_service"
 	"rider-service/internal/core/services/rider_service"
 	"rider-service/internal/handlers"
@@ -41,6 +42,10 @@ func main() {
 
 	tracer, err := tracing.NewOpenTracing("rider-service", tracingUrl, tracingPort)
 
+	if err != nil {
+		logger.Logger.Panic(err)
+	}
+
 	dbConn := GetEnvOrDefault("DATABASE", defaultDbConn)
 
 	db, err := gorm.Open(postgres.Open(dbConn))
@@ -51,6 +56,16 @@ func main() {
 
 	if err = db.Use(otelgorm.NewPlugin(otelgorm.WithTracerProvider(tracer))); err != nil {
 		panic(err)
+	}
+
+	if err != nil {
+		logger.Logger.Panic(err)
+	}
+
+	serviceAreaRepository, err := repositories.NewServiceAreaRepository(db)
+
+	if err != nil {
+		logger.Logger.Panic(err)
 	}
 
 	riderRepository, err := repositories.NewCockroachDB(db)
@@ -69,9 +84,10 @@ func main() {
 
 	rmqPublisher := rabbitmq_service.NewRabbitMQPublisher(rmqServer, tracer)
 
+	serviceAreaService := services.NewServiceAreaService(serviceAreaRepository)
 	riderService := rider_service.New(riderRepository, rmqPublisher)
 
-	rmqSubscriber := handlers.NewRabbitMQ(rmqServer, riderService)
+	rmqSubscriber := handlers.NewRabbitMQ(rmqServer, riderService, serviceAreaService)
 
 	router := gin.New()
 	router.Use(otelgin.Middleware("rider-service", otelgin.WithTracerProvider(tracer)))

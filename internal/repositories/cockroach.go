@@ -13,7 +13,7 @@ type cockroachdb struct {
 }
 
 func NewCockroachDB(db *gorm.DB) (*cockroachdb, error) {
-	err := db.AutoMigrate(&domain.Rider{})
+	err := db.AutoMigrate(&domain.ServiceArea{}, &domain.Rider{})
 
 	if err != nil {
 		return nil, err

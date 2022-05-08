@@ -13,3 +13,7 @@ type RiderService interface {
 	UpdateLocation(ctx context.Context, id string, location domain.Location) (domain.Rider, error)
 	SaveOrUpdateUser(ctx context.Context, user domain.User) error
 }
+
+type ServiceAreaService interface {
+	SaveOrUpdateServiceArea(serviceArea domain.ServiceArea) error
+}

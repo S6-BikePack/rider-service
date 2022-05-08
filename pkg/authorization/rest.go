@@ -16,13 +16,16 @@ func NewRest(context *gin.Context) *RestAuthorization {
 		context: context,
 	}
 
+	auth.id = context.GetHeader("X-User-Id")
+
 	claimHeader := context.GetHeader("X-User-Claims")
 
 	if claimHeader != "" {
-		json.Unmarshal([]byte(claimHeader), &auth.claims)
+		err := json.Unmarshal([]byte(claimHeader), &auth.claims)
+		if err != nil {
+			return &auth
+		}
 	}
-
-	auth.id = context.GetHeader("X-User-Id")
 
 	return &auth
 }
