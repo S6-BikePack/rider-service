@@ -1,0 +1,9 @@
+linters:
+  enable:
+    - gosec
+    - gofmt
+  disable:
+    - gosimple
+    - staticcheck
+    - structcheck
+    - unused

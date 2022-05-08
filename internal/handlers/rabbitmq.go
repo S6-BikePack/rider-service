@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"golang.org/x/exp/maps"
@@ -10,20 +11,36 @@ import (
 )
 
 type rabbitmqHandler struct {
-	rabbitmq *rabbitmq.RabbitMQ
-	service  ports.RiderService
-	handlers map[string]func(topic string, body []byte, handler *rabbitmqHandler) error
+	rabbitmq           *rabbitmq.RabbitMQ
+	service            ports.RiderService
+	serviceAreaService ports.ServiceAreaService
+	handlers           map[string]func(topic string, body []byte, handler *rabbitmqHandler) error
 }
 
-func NewRabbitMQ(rabbitmq *rabbitmq.RabbitMQ, service ports.RiderService) *rabbitmqHandler {
+func NewRabbitMQ(rabbitmq *rabbitmq.RabbitMQ, service ports.RiderService, serviceAreaService ports.ServiceAreaService) *rabbitmqHandler {
 	return &rabbitmqHandler{
-		rabbitmq: rabbitmq,
-		service:  service,
+		rabbitmq:           rabbitmq,
+		service:            service,
+		serviceAreaService: serviceAreaService,
 		handlers: map[string]func(topic string, body []byte, handler *rabbitmqHandler) error{
-			"user.create": UserCreateOrUpdate,
-			"user.update": UserCreateOrUpdate,
+			"user.create":         UserCreateOrUpdate,
+			"user.update":         UserCreateOrUpdate,
+			"service_area.create": ServiceAreaCreateOrUpdate,
 		},
 	}
+}
+
+func ServiceAreaCreateOrUpdate(topic string, body []byte, handler *rabbitmqHandler) error {
+	var serviceArea domain.ServiceArea
+	if err := json.Unmarshal(body, &serviceArea); err != nil {
+		return err
+	}
+
+	if err := handler.serviceAreaService.SaveOrUpdateServiceArea(serviceArea); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func UserCreateOrUpdate(topic string, body []byte, handler *rabbitmqHandler) error {
@@ -33,7 +50,7 @@ func UserCreateOrUpdate(topic string, body []byte, handler *rabbitmqHandler) err
 		return err
 	}
 
-	if err := handler.service.SaveOrUpdateUser(user); err != nil {
+	if err := handler.service.SaveOrUpdateUser(context.Background(), user); err != nil {
 		return err
 	}
 
@@ -90,13 +107,13 @@ func (handler *rabbitmqHandler) Listen(queue string) {
 			if exist {
 				err = fun(msg.RoutingKey, msg.Body, handler)
 				if err == nil {
-					msg.Ack(false)
+					_ = msg.Ack(false)
 					continue
 				}
 			}
 
 			fmt.Println(err)
-			msg.Nack(false, true)
+			_ = msg.Nack(false, true)
 		}
 	}()
 

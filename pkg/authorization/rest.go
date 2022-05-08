@@ -2,7 +2,6 @@ package authorization
 
 import (
 	"encoding/json"
-	"fmt"
 	"github.com/gin-gonic/gin"
 )
 
@@ -17,32 +16,25 @@ func NewRest(context *gin.Context) *RestAuthorization {
 		context: context,
 	}
 
+	auth.id = context.GetHeader("X-User-Id")
+
 	claimHeader := context.GetHeader("X-User-Claims")
 
 	if claimHeader != "" {
-		json.Unmarshal([]byte(claimHeader), &auth.claims)
+		err := json.Unmarshal([]byte(claimHeader), &auth.claims)
+		if err != nil {
+			return &auth
+		}
 	}
-
-	auth.id = context.GetHeader("X-User-Id")
 
 	return &auth
 }
 
 func (auth *RestAuthorization) AuthorizeAdmin() bool {
 	v, exist := auth.claims["admin"]
-	if exist && v == true {
-		fmt.Println("AUTH: is admin")
-	} else {
-		fmt.Println("AUTH: is not admin")
-	}
 	return exist && v == true
 }
 
 func (auth *RestAuthorization) AuthorizeMatchingId(id string) bool {
-	if auth.id == id {
-		fmt.Println("AUTH: id's match")
-	} else {
-		fmt.Println("AUTH: id's do not match")
-	}
 	return auth.id == id
 }
