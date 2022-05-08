@@ -2,7 +2,7 @@
   <a href="https://github.com/S6-BikePack">
     <img src="assets/logo.png" alt="logo" width="200" height="auto" />
   </a>
-  <h1>BikePack - User-Service</h1>
+  <h1>BikePack - Rider-Service</h1>
 
   <p>
     Part of the S6 BikePack project.
@@ -17,7 +17,7 @@
 <h4>
     <a href="https://github.com/S6-BikePack">Home</a>
   <span> · </span>
-    <a href="https://github.com/S6-BikePack/user-service#-about-the-project">Documentation</a>
+    <a href="https://github.com/S6-BikePack/rider-service#-about-the-project">Documentation</a>
   </h4>
 </div>
 
@@ -44,9 +44,9 @@
 <!-- About the Project -->
 ## ⭐ About the Project
 
-The User-Service is the service for the BikePack project that handles all users in the system. 
-A user is anyone with an account in for BikePack and can be both a customer and a rider.
-Using the system users can register to the system with the first and last name and firebase authentication data.
+The Rider-Service is the service for the BikePack project that handles all riders in the system. 
+A rider it keeps track of which riders are online in the different service-areas and their last known location.
+Using the system riders can register to the system.
 
 <!-- Architecture -->
 ### 🏠 Architecture
@@ -81,7 +81,7 @@ This service has the following environment variables that can be set:
 
 `RABBITMQ` - RabbitMQ connection string
 
-`Database` - Database connection string
+`DATABASE` - Database connection string
 
 <!-- Messages -->
 ## 📨 Messages
@@ -90,34 +90,60 @@ This service has the following environment variables that can be set:
 The service publishes the following messages to the RabbitMQ server:
 
 ---
-**user.create**
+**rider.create**
 
-Published when a new user is created in the system.
-Sends the newly created user in the  body.
+Published when a new rider is created in the system.
+Sends the newly created rider in the  body.
 
 ```json
 {
-  "id": "string",
-  "name": "string",
-  "last_name": "string",
-  "email": "string"
+  "userid": "string", 
+  "status": "int",
+  "serviceAreaId": "int",
+  "capacity": {
+    "width": "int",
+    "height": "int",
+    "depth": "int"
+  }
 }
 ```
 
 
 
 ---
-**user.update**
+**rider.update**
 
 Published when a delivery is updated in the system.
 Sends the updated delivery in the  body.
 
 ```json
 {
+  "userid": "string", 
+  "status": "int",
+  "serviceAreaId": "int",
+  "capacity": {
+    "width": "int",
+    "height": "int",
+    "depth": "int"
+  }
+}
+```
+
+
+
+---
+**rider.{service-area}.update.location**
+
+Published when a rider updates their location.
+Is pushed to a service-area specific topic.
+
+```json
+{
   "id": "string", 
-  "name": "string",
-  "last_name": "string",
-  "email": "string"
+  "location": {
+    "latitude": "float",
+    "longitude": "float
+  }
 }
 ```
 
@@ -129,10 +155,26 @@ This service stores the following data:
 
 ```json
 {
-  "id": "string", //primary key
-  "name": "string",
-  "last_name": "string",
-  "email": "string"
+  "id": "string", 
+  "user": {
+    "id": "string",
+    "name": "string",
+    "lastname": "string",
+  }
+  "status": "int",
+  "serviceArea": {
+    "id": "int",
+    "identifier": "string"
+  },
+  "capacity": {
+    "width": "int",
+    "height": "int",
+    "depth": "int"
+  },
+  "location": {
+    "latitide": "float",
+    "longitude": "float"
+  }
 }
 ```
 
@@ -144,7 +186,7 @@ This service stores the following data:
 
 Building the project requires Go 1.18.
 
-This project requires a PostgreSQL compatible database with a database named `user` and a RabbitMQ server.
+This project requires a PostgreSQL compatible database with a database named `rider` and a RabbitMQ server.
 The easiest way to setup the project is to use the Docker-Compose file from the infrastructure repository.
 
 <!-- Running Tests -->
@@ -158,13 +200,13 @@ The easiest way to setup the project is to use the Docker-Compose file from the 
 Clone the project
 
 ```bash
-  git clone https://github.com/S6-BikePack/user-service
+  git clone https://github.com/S6-BikePack/rider-service
 ```
 
 Go to the project directory
 
 ```bash
-  cd user-service
+  cd rider-service
 ```
 
 Run the project (Rest)
