@@ -11,6 +11,7 @@ import (
 	"rider-service/internal/mock"
 	"rider-service/pkg/rabbitmq"
 	"testing"
+	"time"
 )
 
 type RabbitMQHandlerTestSuite struct {
@@ -45,6 +46,10 @@ func (suite *RabbitMQHandlerTestSuite) SetupSuite() {
 
 	handler := NewRabbitMQ(rabbitMQ, mockRiderService, mockServiceAreaService, cfg)
 
+	go handler.Listen()
+
+	time.Sleep(5 * time.Second)
+
 	suite.Cfg = cfg
 	suite.MockRiderService = mockRiderService
 	suite.MockServiceAreaService = mockServiceAreaService
@@ -64,8 +69,6 @@ func (suite *RabbitMQHandlerTestSuite) SetupSuite() {
 			Identifier: "test-area",
 		},
 	}
-
-	go suite.TestHandler.Listen()
 }
 
 func (suite *RabbitMQHandlerTestSuite) SetupTest() {
