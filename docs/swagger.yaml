@@ -1,23 +1,70 @@
 definitions:
-  domain.Location:
+  dto.BodyCreateRider:
+    properties:
+      capacity:
+        $ref: '#/definitions/dto.CreateDimensions'
+      id:
+        type: string
+      serviceArea:
+        type: integer
+      status:
+        type: integer
+    type: object
+  dto.BodyLocation:
     properties:
       latitude:
         type: number
       longitude:
         type: number
     type: object
-  domain.Rider:
+  dto.CreateDimensions:
     properties:
+      depth:
+        type: integer
+      height:
+        type: integer
+      width:
+        type: integer
+    type: object
+  dto.RiderResponse:
+    properties:
+      capacity:
+        $ref: '#/definitions/dto.riderResponseCapacity'
+      id:
+        type: string
       location:
-        $ref: '#/definitions/domain.Location'
+        $ref: '#/definitions/dto.riderResponseLocation'
+      serviceArea:
+        $ref: '#/definitions/dto.riderResponseArea'
       status:
         type: integer
       user:
-        $ref: '#/definitions/domain.User'
-      userID:
+        $ref: '#/definitions/dto.riderResponseUser'
+    type: object
+  dto.riderResponseArea:
+    properties:
+      id:
+        type: integer
+      identifier:
         type: string
     type: object
-  domain.User:
+  dto.riderResponseCapacity:
+    properties:
+      depth:
+        type: integer
+      height:
+        type: integer
+      width:
+        type: integer
+    type: object
+  dto.riderResponseLocation:
+    properties:
+      latitude:
+        type: number
+      longitude:
+        type: number
+    type: object
+  dto.riderResponseUser:
     properties:
       id:
         type: string
@@ -26,39 +73,16 @@ definitions:
       name:
         type: string
     type: object
-  dto.BodyCreate:
+  dto.ridersResponse:
     properties:
       id:
         type: string
-      status:
-        type: integer
-    type: object
-  dto.BodyUpdate:
-    properties:
-      status:
-        type: integer
-    type: object
-  dto.ResponseCreate:
-    properties:
-      location:
-        $ref: '#/definitions/domain.Location'
-      status:
-        type: integer
-      user:
-        $ref: '#/definitions/domain.User'
-      userID:
+      name:
         type: string
-    type: object
-  dto.ResponseUpdate:
-    properties:
-      location:
-        $ref: '#/definitions/domain.Location'
+      serviceArea:
+        type: integer
       status:
         type: integer
-      user:
-        $ref: '#/definitions/domain.User'
-      userID:
-        type: string
     type: object
 info:
   contact: {}
@@ -75,7 +99,7 @@ paths:
           description: OK
           schema:
             items:
-              $ref: '#/definitions/domain.Rider'
+              $ref: '#/definitions/dto.ridersResponse'
             type: array
       summary: get all riders
     post:
@@ -88,14 +112,14 @@ paths:
         name: rider
         required: true
         schema:
-          $ref: '#/definitions/dto.BodyCreate'
+          $ref: '#/definitions/dto.BodyCreateRider'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/dto.ResponseCreate'
+            $ref: '#/definitions/dto.RiderResponse'
       summary: create rider
   /api/riders/{id}:
     get:
@@ -112,7 +136,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/domain.Rider'
+            $ref: '#/definitions/dto.RiderResponse'
       summary: get rider
     put:
       consumes:
@@ -124,7 +148,7 @@ paths:
         name: rider
         required: true
         schema:
-          $ref: '#/definitions/dto.BodyUpdate'
+          $ref: '#/definitions/dto.BodyCreateRider'
       - description: Rider id
         in: path
         name: id
@@ -136,7 +160,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/dto.ResponseUpdate'
+            $ref: '#/definitions/dto.RiderResponse'
       summary: update rider
   /api/riders/{id}/location:
     put:
@@ -149,7 +173,7 @@ paths:
         name: rider
         required: true
         schema:
-          $ref: '#/definitions/domain.Location'
+          $ref: '#/definitions/dto.BodyLocation'
       - description: Rider id
         in: path
         name: id
@@ -161,6 +185,6 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/dto.ResponseUpdate'
+            $ref: '#/definitions/dto.RiderResponse'
       summary: update rider location
 swagger: "2.0"

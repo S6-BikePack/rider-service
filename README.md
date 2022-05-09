@@ -10,14 +10,16 @@
 
 
 <!-- Badges -->
-<p>
-
-</p>
+[![golangci-lint](https://github.com/S6-BikePack/rider-service/actions/workflows/golangci-lint.yml/badge.svg)](https://github.com/S6-BikePack/rider-service/actions/workflows/golangci-lint.yml)
+[![Makefile CI](https://github.com/S6-BikePack/rider-service/actions/workflows/run-tests.yml/badge.svg)](https://github.com/S6-BikePack/rider-service/actions/workflows/run-tests.yml)
+[![Docker](https://github.com/S6-BikePack/rider-service/actions/workflows/docker-publish.yml/badge.svg)](https://github.com/S6-BikePack/rider-service/actions/workflows/docker-publish.yml)
 
 <h4>
     <a href="https://github.com/S6-BikePack">Home</a>
   <span> · </span>
     <a href="https://github.com/S6-BikePack/rider-service#-about-the-project">Documentation</a>
+  <span> · </span>
+    <a href="https://github.com/S6-BikePack/infrastructure#-about-the-project">Infrastructure</a>
   </h4>
 </div>
 
@@ -142,7 +144,7 @@ Is pushed to a service-area specific topic.
   "id": "string", 
   "location": {
     "latitude": "float",
-    "longitude": "float
+    "longitude": "float"
   }
 }
 ```
@@ -159,8 +161,8 @@ This service stores the following data:
   "user": {
     "id": "string",
     "name": "string",
-    "lastname": "string",
-  }
+    "lastname": "string"
+  },
   "status": "int",
   "serviceArea": {
     "id": "int",
@@ -192,7 +194,7 @@ The easiest way to setup the project is to use the Docker-Compose file from the 
 <!-- Running Tests -->
 ### 🧪 Running Tests
 
--
+The tests in the project can easily be run using make and the `make run-tests` command. This will start the required docker containers and run all tests in the project.
 
 <!-- Run Locally -->
 ### 🏃 Run Locally

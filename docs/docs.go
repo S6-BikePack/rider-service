@@ -32,7 +32,7 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/domain.Rider"
+                                "$ref": "#/definitions/dto.ridersResponse"
                             }
                         }
                     }
@@ -54,7 +54,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/dto.BodyCreate"
+                            "$ref": "#/definitions/dto.BodyCreateRider"
                         }
                     }
                 ],
@@ -62,7 +62,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/dto.ResponseCreate"
+                            "$ref": "#/definitions/dto.RiderResponse"
                         }
                     }
                 }
@@ -88,7 +88,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/domain.Rider"
+                            "$ref": "#/definitions/dto.RiderResponse"
                         }
                     }
                 }
@@ -109,7 +109,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/dto.BodyUpdate"
+                            "$ref": "#/definitions/dto.BodyCreateRider"
                         }
                     },
                     {
@@ -124,7 +124,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/dto.ResponseUpdate"
+                            "$ref": "#/definitions/dto.RiderResponse"
                         }
                     }
                 }
@@ -147,7 +147,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/domain.Location"
+                            "$ref": "#/definitions/dto.BodyLocation"
                         }
                     },
                     {
@@ -162,7 +162,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/dto.ResponseUpdate"
+                            "$ref": "#/definitions/dto.RiderResponse"
                         }
                     }
                 }
@@ -170,7 +170,24 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "domain.Location": {
+        "dto.BodyCreateRider": {
+            "type": "object",
+            "properties": {
+                "capacity": {
+                    "$ref": "#/definitions/dto.CreateDimensions"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "serviceArea": {
+                    "type": "integer"
+                },
+                "status": {
+                    "type": "integer"
+                }
+            }
+        },
+        "dto.BodyLocation": {
             "type": "object",
             "properties": {
                 "latitude": {
@@ -181,24 +198,80 @@ const docTemplate = `{
                 }
             }
         },
-        "domain.Rider": {
+        "dto.CreateDimensions": {
             "type": "object",
             "properties": {
+                "depth": {
+                    "type": "integer"
+                },
+                "height": {
+                    "type": "integer"
+                },
+                "width": {
+                    "type": "integer"
+                }
+            }
+        },
+        "dto.RiderResponse": {
+            "type": "object",
+            "properties": {
+                "capacity": {
+                    "$ref": "#/definitions/dto.riderResponseCapacity"
+                },
+                "id": {
+                    "type": "string"
+                },
                 "location": {
-                    "$ref": "#/definitions/domain.Location"
+                    "$ref": "#/definitions/dto.riderResponseLocation"
+                },
+                "serviceArea": {
+                    "$ref": "#/definitions/dto.riderResponseArea"
                 },
                 "status": {
                     "type": "integer"
                 },
                 "user": {
-                    "$ref": "#/definitions/domain.User"
+                    "$ref": "#/definitions/dto.riderResponseUser"
+                }
+            }
+        },
+        "dto.riderResponseArea": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "integer"
                 },
-                "userID": {
+                "identifier": {
                     "type": "string"
                 }
             }
         },
-        "domain.User": {
+        "dto.riderResponseCapacity": {
+            "type": "object",
+            "properties": {
+                "depth": {
+                    "type": "integer"
+                },
+                "height": {
+                    "type": "integer"
+                },
+                "width": {
+                    "type": "integer"
+                }
+            }
+        },
+        "dto.riderResponseLocation": {
+            "type": "object",
+            "properties": {
+                "latitude": {
+                    "type": "number"
+                },
+                "longitude": {
+                    "type": "number"
+                }
+            }
+        },
+        "dto.riderResponseUser": {
             "type": "object",
             "properties": {
                 "id": {
@@ -212,56 +285,20 @@ const docTemplate = `{
                 }
             }
         },
-        "dto.BodyCreate": {
+        "dto.ridersResponse": {
             "type": "object",
             "properties": {
                 "id": {
                     "type": "string"
                 },
-                "status": {
-                    "type": "integer"
-                }
-            }
-        },
-        "dto.BodyUpdate": {
-            "type": "object",
-            "properties": {
-                "status": {
-                    "type": "integer"
-                }
-            }
-        },
-        "dto.ResponseCreate": {
-            "type": "object",
-            "properties": {
-                "location": {
-                    "$ref": "#/definitions/domain.Location"
-                },
-                "status": {
-                    "type": "integer"
-                },
-                "user": {
-                    "$ref": "#/definitions/domain.User"
-                },
-                "userID": {
+                "name": {
                     "type": "string"
-                }
-            }
-        },
-        "dto.ResponseUpdate": {
-            "type": "object",
-            "properties": {
-                "location": {
-                    "$ref": "#/definitions/domain.Location"
+                },
+                "serviceArea": {
+                    "type": "integer"
                 },
                 "status": {
                     "type": "integer"
-                },
-                "user": {
-                    "$ref": "#/definitions/domain.User"
-                },
-                "userID": {
-                    "type": "string"
                 }
             }
         }
