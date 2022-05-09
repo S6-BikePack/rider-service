@@ -4,7 +4,7 @@ type Rider struct {
 	UserID        string `gorm:"primaryKey"`
 	User          User
 	Status        int
-	ServiceAreaID int `json:"-"`
+	ServiceAreaID int
 	ServiceArea   ServiceArea
 	Capacity      Dimensions `gorm:"embedded"`
 	Location      Location

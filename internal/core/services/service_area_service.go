@@ -2,14 +2,14 @@ package services
 
 import (
 	"rider-service/internal/core/domain"
-	"rider-service/internal/core/ports"
+	"rider-service/internal/core/interfaces"
 )
 
 type serviceAreaService struct {
-	serviceAreaRepository ports.ServiceAreaRepository
+	serviceAreaRepository interfaces.ServiceAreaRepository
 }
 
-func NewServiceAreaService(serviceAreaRepository ports.ServiceAreaRepository) *serviceAreaService {
+func NewServiceAreaService(serviceAreaRepository interfaces.ServiceAreaRepository) *serviceAreaService {
 	return &serviceAreaService{
 		serviceAreaRepository: serviceAreaRepository,
 	}

@@ -3,7 +3,6 @@ package domain
 import (
 	"database/sql/driver"
 	"encoding/hex"
-	"errors"
 	"github.com/twpayne/go-geom"
 	"github.com/twpayne/go-geom/encoding/ewkb"
 	"github.com/twpayne/go-geom/encoding/wkt"
@@ -14,17 +13,6 @@ import (
 type Location struct {
 	Latitude  float64
 	Longitude float64
-}
-
-func NewLocation(latitude float64, longitude float64) (Location, error) {
-	if latitude > 90 || latitude < -90 {
-		return Location{}, errors.New("latitude is out of bounds")
-	}
-
-	return Location{
-		Latitude:  latitude,
-		Longitude: longitude,
-	}, nil
 }
 
 func (l Location) Value() (driver.Value, error) {

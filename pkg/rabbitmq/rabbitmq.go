@@ -1,7 +1,9 @@
 package rabbitmq
 
 import (
+	"fmt"
 	amqp "github.com/rabbitmq/amqp091-go"
+	"rider-service/config"
 )
 
 type RabbitMQ struct {
@@ -9,8 +11,11 @@ type RabbitMQ struct {
 	Channel    *amqp.Channel
 }
 
-func NewRabbitMQ(connstr string) (*RabbitMQ, error) {
-	conn, err := amqp.Dial(connstr)
+func NewRabbitMQ(cfg *config.Config) (*RabbitMQ, error) {
+	connStr := fmt.Sprintf("amqp://%s:%s@%s:%d/",
+		cfg.RabbitMQ.User, cfg.RabbitMQ.Password, cfg.RabbitMQ.Host, cfg.RabbitMQ.Port)
+
+	conn, err := amqp.Dial(connStr)
 
 	if err != nil {
 		return nil, err
@@ -23,7 +28,7 @@ func NewRabbitMQ(connstr string) (*RabbitMQ, error) {
 	}
 
 	err = channel.ExchangeDeclare(
-		"topics",
+		cfg.RabbitMQ.Exchange,
 		"topic",
 		true,
 		false,
@@ -53,5 +58,5 @@ func NewRabbitMQ(connstr string) (*RabbitMQ, error) {
 }
 
 func (r *RabbitMQ) Close() {
-	r.Connection.Close()
+	_ = r.Connection.Close()
 }

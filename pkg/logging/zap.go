@@ -4,10 +4,11 @@ import (
 	"context"
 	"github.com/uptrace/opentelemetry-go-extra/otelzap"
 	"go.uber.org/zap"
+	"rider-service/config"
 )
 
 type Logger interface {
-	Close()
+	Close() error
 	Panic(ctx context.Context, args ...interface{})
 	Fatal(ctx context.Context, args ...interface{})
 	Info(ctx context.Context, msg string, keysAndValues ...interface{})
@@ -18,9 +19,10 @@ type Logger interface {
 
 type OtelzapSugaredLogger struct {
 	Logger otelzap.SugaredLogger
+	Config *config.Config
 }
 
-func NewSugaredOtelZap() (*OtelzapSugaredLogger, error) {
+func NewSugaredOtelZap(cfg *config.Config) (*OtelzapSugaredLogger, error) {
 	logger, err := zap.NewDevelopment()
 
 	if err != nil {
@@ -30,14 +32,16 @@ func NewSugaredOtelZap() (*OtelzapSugaredLogger, error) {
 	otelZap := otelzap.New(logger)
 	sugar := otelZap.Sugar()
 
-	return &OtelzapSugaredLogger{Logger: *sugar}, nil
+	return &OtelzapSugaredLogger{Logger: *sugar, Config: cfg}, nil
 }
 
-func (l *OtelzapSugaredLogger) Close() {
+func (l *OtelzapSugaredLogger) Close() error {
 	err := l.Logger.Sync()
 	if err != nil {
-		l.Logger.Error(err)
+		return err
 	}
+
+	return nil
 }
 
 func (l *OtelzapSugaredLogger) Panic(ctx context.Context, args ...interface{}) {

@@ -1,21 +1,14 @@
 package dto
 
-import "rider-service/internal/core/domain"
-
 type CreateDimensions struct {
-	Width  int
-	Height int
-	Depth  int
+	Width  int `json:"width"`
+	Height int `json:"height"`
+	Depth  int `json:"depth"`
 }
 
-type BodyCreate struct {
-	ID          string
-	ServiceArea int
-	Capacity    CreateDimensions
-}
-
-type ResponseCreate domain.Rider
-
-func BuildResponseCreate(model domain.Rider) ResponseCreate {
-	return ResponseCreate(model)
+type BodyCreateRider struct {
+	ID          string           `json:"id"`
+	ServiceArea int              `json:"serviceArea"`
+	Capacity    CreateDimensions `json:"capacity"`
+	Status      int              `json:"status"`
 }

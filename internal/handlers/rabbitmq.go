@@ -5,19 +5,22 @@ import (
 	"encoding/json"
 	"fmt"
 	"golang.org/x/exp/maps"
+	"rider-service/config"
 	"rider-service/internal/core/domain"
-	"rider-service/internal/core/ports"
+	"rider-service/internal/core/interfaces"
 	"rider-service/pkg/rabbitmq"
 )
 
 type rabbitmqHandler struct {
 	rabbitmq           *rabbitmq.RabbitMQ
-	service            ports.RiderService
-	serviceAreaService ports.ServiceAreaService
+	service            interfaces.RiderService
+	serviceAreaService interfaces.ServiceAreaService
 	handlers           map[string]func(topic string, body []byte, handler *rabbitmqHandler) error
+	config             *config.Config
+	channel            chan bool
 }
 
-func NewRabbitMQ(rabbitmq *rabbitmq.RabbitMQ, service ports.RiderService, serviceAreaService ports.ServiceAreaService) *rabbitmqHandler {
+func NewRabbitMQ(rabbitmq *rabbitmq.RabbitMQ, service interfaces.RiderService, serviceAreaService interfaces.ServiceAreaService, config *config.Config) *rabbitmqHandler {
 	return &rabbitmqHandler{
 		rabbitmq:           rabbitmq,
 		service:            service,
@@ -27,6 +30,7 @@ func NewRabbitMQ(rabbitmq *rabbitmq.RabbitMQ, service ports.RiderService, servic
 			"user.update":         UserCreateOrUpdate,
 			"service_area.create": ServiceAreaCreateOrUpdate,
 		},
+		config: config,
 	}
 }
 
@@ -57,10 +61,10 @@ func UserCreateOrUpdate(topic string, body []byte, handler *rabbitmqHandler) err
 	return nil
 }
 
-func (handler *rabbitmqHandler) Listen(queue string) {
+func (handler *rabbitmqHandler) Listen() {
 
 	q, err := handler.rabbitmq.Channel.QueueDeclare(
-		queue,
+		handler.config.Server.Service+"Queue",
 		true,
 		false,
 		false,
@@ -76,7 +80,7 @@ func (handler *rabbitmqHandler) Listen(queue string) {
 		err = handler.rabbitmq.Channel.QueueBind(
 			q.Name,
 			s,
-			"topics",
+			handler.config.RabbitMQ.Exchange,
 			false,
 			nil)
 		if err != nil {
@@ -98,26 +102,34 @@ func (handler *rabbitmqHandler) Listen(queue string) {
 		panic(err)
 	}
 
-	forever := make(chan bool)
+	handler.channel = make(chan bool)
 
 	go func() {
 		for msg := range msgs {
-			fun, exist := handler.handlers[msg.RoutingKey]
+			select {
+			case <-handler.channel:
+				return
+			default:
+				fun, exist := handler.handlers[msg.RoutingKey]
 
-			if exist {
-				err = fun(msg.RoutingKey, msg.Body, handler)
-				if err == nil {
-					_ = msg.Ack(false)
-					continue
+				if exist {
+					err = fun(msg.RoutingKey, msg.Body, handler)
+					if err == nil {
+						_ = msg.Ack(false)
+						continue
+					}
 				}
+
+				fmt.Println(err)
+				_ = msg.Nack(false, true)
 			}
 
-			fmt.Println(err)
-			_ = msg.Nack(false, true)
 		}
 	}()
+}
 
-	<-forever
+func (handler *rabbitmqHandler) Quit() {
+	handler.channel <- true
 }
 
 type MessageHandler struct {

@@ -9,10 +9,10 @@ import (
 	"go.opentelemetry.io/otel/semconv/v1.4.0"
 )
 
-func NewOpenTracing(serviceName, address, port string) (*trace.TracerProvider, error) {
+func NewOpenTracing(serviceName, address string, port int) (*trace.TracerProvider, error) {
 	exporter, err := jaeger.New(jaeger.WithAgentEndpoint(
 		jaeger.WithAgentHost(address),
-		jaeger.WithAgentPort(port),
+		jaeger.WithAgentPort(string(rune(port))),
 	))
 
 	if err != nil {

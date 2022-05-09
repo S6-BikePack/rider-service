@@ -8,33 +8,37 @@ import (
 	"rider-service/internal/core/domain"
 )
 
-type cockroachdb struct {
+type riderRepository struct {
 	Connection *gorm.DB
 }
 
-func NewCockroachDB(db *gorm.DB) (*cockroachdb, error) {
+func NewRiderRepository(db *gorm.DB) (*riderRepository, error) {
 	err := db.AutoMigrate(&domain.ServiceArea{}, &domain.Rider{})
 
 	if err != nil {
 		return nil, err
 	}
 
-	database := cockroachdb{
+	database := riderRepository{
 		Connection: db,
 	}
 
 	return &database, nil
 }
 
-func (repository *cockroachdb) Get(ctx context.Context, id string) (domain.Rider, error) {
+func (repository *riderRepository) Get(ctx context.Context, id string) (domain.Rider, error) {
 	var rider domain.Rider
 
 	repository.Connection.WithContext(ctx).Preload(clause.Associations).First(&rider, "user_id = ?", id)
 
+	if (rider == domain.Rider{}) {
+		return domain.Rider{}, errors.New("could not find rider")
+	}
+
 	return rider, nil
 }
 
-func (repository *cockroachdb) GetAll(ctx context.Context) ([]domain.Rider, error) {
+func (repository *riderRepository) GetAll(ctx context.Context) ([]domain.Rider, error) {
 	var riders []domain.Rider
 
 	repository.Connection.WithContext(ctx).Find(&riders)
@@ -42,7 +46,7 @@ func (repository *cockroachdb) GetAll(ctx context.Context) ([]domain.Rider, erro
 	return riders, nil
 }
 
-func (repository *cockroachdb) Save(ctx context.Context, rider domain.Rider) (domain.Rider, error) {
+func (repository *riderRepository) Save(ctx context.Context, rider domain.Rider) (domain.Rider, error) {
 	result := repository.Connection.WithContext(ctx).Omit("User").Create(&rider)
 
 	if result.Error != nil {
@@ -52,7 +56,7 @@ func (repository *cockroachdb) Save(ctx context.Context, rider domain.Rider) (do
 	return rider, nil
 }
 
-func (repository *cockroachdb) Update(ctx context.Context, rider domain.Rider) (domain.Rider, error) {
+func (repository *riderRepository) Update(ctx context.Context, rider domain.Rider) (domain.Rider, error) {
 	result := repository.Connection.WithContext(ctx).Model(&rider).Updates(rider)
 
 	if result.Error != nil {
@@ -62,7 +66,7 @@ func (repository *cockroachdb) Update(ctx context.Context, rider domain.Rider) (
 	return rider, nil
 }
 
-func (repository *cockroachdb) SaveOrUpdateUser(ctx context.Context, user domain.User) error {
+func (repository *riderRepository) SaveOrUpdateUser(ctx context.Context, user domain.User) error {
 	updateResult := repository.Connection.WithContext(ctx).Model(&user).Where("id = ?", user.ID).Updates(&user)
 
 	if updateResult.RowsAffected == 0 {
@@ -80,7 +84,7 @@ func (repository *cockroachdb) SaveOrUpdateUser(ctx context.Context, user domain
 	return nil
 }
 
-func (repository *cockroachdb) GetUser(ctx context.Context, id string) (domain.User, error) {
+func (repository *riderRepository) GetUser(ctx context.Context, id string) (domain.User, error) {
 	var user domain.User
 
 	repository.Connection.WithContext(ctx).Preload(clause.Associations).First(&user, "id = ?", id)

@@ -1,0 +1,53 @@
+version: "3.8"
+services:
+    test-postgres:
+        container_name: 'test_rider_service_postgres'
+        image: postgis/postgis
+        healthcheck:
+          test: ["CMD-SHELL", "pg_isready -U user"]
+          interval: 10s
+          timeout: 5s
+          retries: 10
+        ports:
+          - "5444:5432"
+        environment:
+          POSTGRES_USER: ${POSTGRES_USER:-user}
+          POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-password}
+        command: ["postgres", "-c", "log_statement=all", "-c", "log_destination=stderr"]
+        volumes:
+          - ./test/postgres-initdb:/docker-entrypoint-initdb.d/
+          - test-pgdata:/var/lib/postgresql/data
+
+    test-rabbitmq:
+      image: rabbitmq:3-management-alpine
+      container_name: 'test_rider_service_rabbitmq'
+      healthcheck:
+        test: rabbitmq-diagnostics -q ping
+        interval: 30s
+        timeout: 30s
+        retries: 10
+      ports:
+          - 5672:5672
+          - 15672:15672
+      environment:
+        RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER:-user}
+        RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS:-password}
+
+    test-rider-service:
+      depends_on:
+        test-rabbitmq:
+          condition: service_healthy
+        test-postgres:
+          condition: service_healthy
+      volumes:
+        - ./test/rider.config.json:/config/config.json
+      environment:
+        config: ./config/config
+      container_name: "test_rider-service"
+      build:
+        context: .
+        dockerfile: Dockerfile.test
+      image: test-rider-service
+
+volumes:
+    test-pgdata:
