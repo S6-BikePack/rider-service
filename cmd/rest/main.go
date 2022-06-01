@@ -35,13 +35,7 @@ func main() {
 	// Setup Logging and Tracing
 	//--------------------------------------------------------------------------------------
 
-	logger, err := logging.NewSugaredOtelZap(cfg)
-	defer func(logger *logging.OtelzapSugaredLogger) {
-		err = logger.Close()
-		if err != nil {
-			panic(err)
-		}
-	}(logger)
+	logger, err := logging.NewSimpleLogger(cfg)
 
 	if err != nil {
 		panic(err)
