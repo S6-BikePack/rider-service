@@ -12,8 +12,8 @@ import (
 	"rider-service/internal/core/services"
 	"rider-service/internal/handlers"
 	"rider-service/internal/repositories"
-	"rider-service/pkg/azure"
 	"rider-service/pkg/logging"
+	"rider-service/pkg/rabbitmq"
 	"rider-service/pkg/tracing"
 
 	"github.com/gin-gonic/gin"
@@ -88,22 +88,22 @@ func main() {
 	// Setup RabbitMQ
 	//--------------------------------------------------------------------------------------
 
-	azServer, err := azure.NewAzureServiceBus(cfg)
+	rmqServer, err := rabbitmq.NewRabbitMQ(cfg)
 
 	if err != nil {
 		logger.Panic(context.Background(), err)
 	}
 
-	azPublisher := services.NewAzurePublisher(azServer, cfg)
+	rmqPublisher := services.NewRabbitMQPublisher(rmqServer, tracer, cfg)
 
 	//--------------------------------------------------------------------------------------
 	// Setup Services
 	//--------------------------------------------------------------------------------------
 
 	serviceAreaService := services.NewServiceAreaService(serviceAreaRepository)
-	riderService := services.NewRiderService(riderRepository, azPublisher)
+	riderService := services.NewRiderService(riderRepository, rmqPublisher)
 
-	azSubscriber := handlers.NewAzure(azServer, riderService, serviceAreaService, cfg)
+	rmqSubscriber := handlers.NewRabbitMQ(rmqServer, riderService, serviceAreaService, cfg)
 
 	//--------------------------------------------------------------------------------------
 	// Setup HTTP server
@@ -115,9 +115,8 @@ func main() {
 	riderHandler := handlers.NewHTTPHandler(riderService, router, logger, cfg)
 	riderHandler.SetupEndpoints()
 	riderHandler.SetupSwagger()
-	riderHandler.SetupHealthprobe()
 
-	go azSubscriber.Listen()
+	go rmqSubscriber.Listen()
 	logger.Fatal(context.Background(), router.Run(cfg.Server.Port))
 }
 

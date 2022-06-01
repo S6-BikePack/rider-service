@@ -1,0 +1,79 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rider-service-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: rider-service
+  template:
+    metadata:
+      labels:
+        app: rider-service
+    spec:
+      containers:
+      - image: bikepack.azurecr.io/bikepack/rider-service:latest
+        name: rider
+        resources:
+          requests:
+            cpu: '0'
+            memory: '0'
+          limits:
+            cpu: '256'
+            memory: 11400G
+        ports:
+        - containerPort: 1234
+          protocol: TCP
+        volumeMounts:
+          - mountPath: "/mnt/secrets-store"
+            name: secrets-store01
+            readOnly: true
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 1234
+          periodSeconds: 30
+          timeoutSeconds: 30
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 1234
+          periodSeconds: 30
+          timeoutSeconds: 30
+        env:
+        - name: SERVER_PORT
+          value: ":1234"
+        - name: DATABASE_HOST
+          value: bikepack-main.postgres.database.azure.com
+        - name: DATABASE_PORT
+          value: '5432'
+        - name: DATABASE_USER
+          valueFrom:
+            secretKeyRef:
+              name: user-secret
+              key: dbUser
+        - name: DATABASE_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: user-secret
+              key: dbPass
+        - name: DATABASE_DATABASE
+          value: rider
+        - name: DATABASE_SSLMODE
+          value: require
+        - name: AZURESERVICEBUS_CONNECTIONSTRING
+          valueFrom:
+            secretKeyRef:
+              name: bikepack-secret
+              key: sbConn
+        - name: AZURESERVICEBUS_QUEUENAME
+          value: rider-service-queue
+      
+      volumes:
+      - name: secrets-store01
+        csi:
+          driver: secrets-store.csi.k8s.io
+          readOnly: true
+          volumeAttributes:
+            secretProviderClass: azure-sync

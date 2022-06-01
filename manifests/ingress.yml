@@ -1,0 +1,14 @@
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: rider-ingress
+spec:
+  routes:
+    - match: PathPrefix(`/api/riders`)
+      kind: Rule
+      services:
+        - name: rider-service
+          port: 1234
+      middlewares:
+        - name: allow-headers
+        - name: forward-auth

@@ -1,0 +1,14 @@
+FROM scratch
+COPY rider-service /
+
+LABEL traefik.enable=true
+LABEL traefik.http.routers.rider-rest.rule=PathPrefix(`/api/riders`)
+LABEL traefik.http.routers.rider-rest.entrypoints=web
+LABEL traefik.http.routers.rider-rest.middlewares='putheaders, traefik-forward-auth'
+LABEL traefik.http.middlewares.putheaders.headers.accesscontrolalloworiginlist=*
+LABEL traefik.http.middlewares.putheaders.headers.accessControlAllowMethods='GET, POST, PUT'
+LABEL traefik.http.middlewares.putheaders.headers.accessControlAllowHeaders='authorization, content-type'
+
+EXPOSE 1234
+
+ENTRYPOINT ["/rider-service"]

@@ -1,0 +1,48 @@
+name: "Deploy-cluster"
+
+on:
+  push:
+    tags:
+      - v*
+
+jobs:
+  tests:
+    uses: ./.github/workflows/run-tests.yml
+  build:
+    needs: [tests]
+    uses: ./.github/workflows/build.yml
+    secrets: inherit
+  deploy:
+    needs: [build]
+    runs-on: ubuntu-latest
+    steps:
+      -
+        name: Checkout
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      -
+        name: Login to aks
+        uses: azure/k8s-set-context@v1
+        with:
+          kubeconfig: ${{ secrets.aks_bikepack_kubeConfig }}
+        id: login
+      -
+        name: Create namespace
+        run: |
+          namespacePresent=`kubectl get namespace | grep default | wc -l`
+          if [ $namespacePresent -eq 0 ]
+          then
+              echo `kubectl create namespace default`
+          fi
+      -
+        name: Deploy to aks
+        uses: azure/k8s-deploy@v1.2
+        with:
+          namespace: default
+          manifests: |
+            manifests/ingress.yml
+            manifests/deployment.yml
+            manifests/service.yml
+          images: |
+            bikepack.azurecr.io/bikepack/rider-service:latest
