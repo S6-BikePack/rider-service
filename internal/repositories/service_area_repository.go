@@ -10,6 +10,8 @@ type serviceAreaRepository struct {
 }
 
 func NewServiceAreaRepository(db *gorm.DB) (*serviceAreaRepository, error) {
+	db.Exec("CREATE EXTENSION IF NOT EXISTS \"postgis\";")
+	
 	err := db.AutoMigrate(&domain.ServiceArea{})
 
 	if err != nil {

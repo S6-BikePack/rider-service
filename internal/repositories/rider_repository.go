@@ -13,6 +13,8 @@ type riderRepository struct {
 }
 
 func NewRiderRepository(db *gorm.DB) (*riderRepository, error) {
+	db.Exec("CREATE EXTENSION IF NOT EXISTS \"postgis\";")
+
 	err := db.AutoMigrate(&domain.ServiceArea{}, &domain.Rider{})
 
 	if err != nil {
