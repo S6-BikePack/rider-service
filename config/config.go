@@ -33,6 +33,7 @@ type RabbitMQ struct {
 
 type AzureServiceBus struct {
 	ConnectionString string
+	QueueName        string
 }
 
 type Database struct {
