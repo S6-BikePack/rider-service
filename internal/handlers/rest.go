@@ -49,6 +49,12 @@ func (handler *HTTPHandler) SetupSwagger() {
 	handler.router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 }
 
+func (handler *HTTPHandler) SetupHealthprobe() {
+	handler.router.GET("/health", func(c *gin.Context) {
+		c.String(http.StatusOK, "OK")
+	})
+}
+
 // GetAll godoc
 // @Summary  get all riders
 // @Schemes

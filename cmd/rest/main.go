@@ -115,6 +115,7 @@ func main() {
 	riderHandler := handlers.NewHTTPHandler(riderService, router, logger, cfg)
 	riderHandler.SetupEndpoints()
 	riderHandler.SetupSwagger()
+	riderHandler.SetupHealthprobe()
 
 	go azSubscriber.Listen()
 	logger.Fatal(context.Background(), router.Run(cfg.Server.Port))
